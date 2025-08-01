@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "lastUpdate": "2025-08-01T00:00:00.000Z",
+  "metadata": {
+    "totalProveedores": 0,
+    "totalContratos": 0,
+    "totalArchivos": 0,
+    "createdBy": "Sistema de Gestión de Proveedores",
+    "description": "Base de datos de proveedores con integración GitHub"
+  },
+  "config": {
+    "maxFileSize": 25000000,
+    "allowedFileTypes": [".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png"],
+    "autoBackup": true,
+    "backupInterval": "daily"
+  },
+  "proveedores": []
+}
