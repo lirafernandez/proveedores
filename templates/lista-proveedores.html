@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Proveedores - Sistema de Gestión</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../static/CSS/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">
+                <i class="bi bi-building"></i> Gestión de Proveedores
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Mostrar menú">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="lista-proveedores.html">Proveedores</a></li>
+                    <li class="nav-item"><a class="nav-link" href="detalle-provedor.html">Detalles</a></li>
+                    <li class="nav-item"><a class="nav-link" href="ver-documentos.html">Documentos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="configuracion-github.html">
+                        <i class="bi bi-github"></i> GitHub
+                    </a></li>
+                    <li class="nav-item"><a class="nav-link" href="admin-archivos.html">
+                        <i class="bi bi-files"></i> Archivos
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Encabezado y filtros -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h1 class="h4 mb-0">Gestión de Proveedores</h1>
+                        <button class="btn btn-light" id="btnNuevoProveedor">
+                            <i class="bi bi-plus-circle"></i> Nuevo Proveedor
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Filtros -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="filtroNombre" class="form-label">Buscar por nombre:</label>
+                                <input type="text" class="form-control" id="filtroNombre" placeholder="Nombre del proveedor">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filtroConstancia" class="form-label">Constancia:</label>
+                                <select class="form-select" id="filtroConstancia">
+                                    <option value="">Todos</option>
+                                    <option value="si">Con constancia</option>
+                                    <option value="no">Sin constancia</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filtroContrato" class="form-label">Contratos:</label>
+                                <select class="form-select" id="filtroContrato">
+                                    <option value="">Todos</option>
+                                    <option value="activos">Con contratos activos</option>
+                                    <option value="vencidos">Con contratos vencidos</option>
+                                    <option value="sin">Sin contratos</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-outline-secondary" id="btnLimpiarFiltros">
+                                    <i class="bi bi-x-circle"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas de contratos -->
+        <div id="alertasContainer"></div>
+
+        <!-- Lista de proveedores -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h2 class="h5 mb-0">Lista de Proveedores</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Dirección</th>
+                                        <th>Constancia</th>
+                                        <th>Contratos</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaProveedores">
+                                    <!-- Aquí se cargarán los proveedores -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Proveedor -->
+    <div class="modal fade" id="modalProveedor" tabindex="-1" aria-labelledby="tituloModalProveedor" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModalProveedor">Nuevo Proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formProveedor">
+                        <input type="hidden" id="idProveedor">
+                        
+                        <div class="mb-3">
+                            <label for="nombreProveedor" class="form-label">Nombre del Proveedor *</label>
+                            <input type="text" class="form-control" id="nombreProveedor" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="direccionProveedor" class="form-label">Dirección</label>
+                            <textarea class="form-control" id="direccionProveedor" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="tieneConstancia">
+                                <label class="form-check-label" for="tieneConstancia">
+                                    Requiere constancia
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="seccionConstancia" class="d-none">
+                            <div class="mb-3">
+                                <label for="archivoConstancia" class="form-label">Archivo de Constancia</label>
+                                <input type="file" class="form-control" id="archivoConstancia" accept=".pdf,.doc,.docx">
+                                <div id="constanciaPreview" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarProveedor">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="modalConfirmacion" tabindex="-1" aria-labelledby="tituloModalConfirmacion" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="tituloModalConfirmacion">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro que desea eliminar el proveedor <strong id="nombreProveedorEliminar"></strong>?</p>
+                    <p class="text-danger">Esta acción eliminará también todos los contratos asociados y no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificaciones -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="../static/js/storage.js"></script>
+    <script src="../static/js/ui.js"></script>
+    <script src="../static/js/github-storage.js"></script>
+    <script src="../static/js/proveedores.js"></script>
+    <script src="../static/js/contratos.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar datos
+            inicializarDatos();
+            
+            // Verificar si estamos en la página de listado de proveedores
+            if (document.getElementById('tablaProveedores')) {
+                cargarListaProveedores();
+                mostrarAlertasContratos();
+                
+                // Configurar filtros
+                const filtroNombre = document.getElementById('filtroNombre');
+                const filtroConstancia = document.getElementById('filtroConstancia');
+                const filtroContrato = document.getElementById('filtroContrato');
+                
+                if (filtroNombre) {
+                    filtroNombre.addEventListener('input', filtrarProveedores);
+                }
+                if (filtroConstancia) {
+                    filtroConstancia.addEventListener('change', filtrarProveedores);
+                }
+                if (filtroContrato) {
+                    filtroContrato.addEventListener('change', filtrarProveedores);
+                }
+                
+                // Botón de limpiar filtros
+                const btnLimpiar = document.getElementById('btnLimpiarFiltros');
+                if (btnLimpiar) {
+                    btnLimpiar.addEventListener('click', limpiarFiltros);
+                }
+                
+                // Botón de nuevo proveedor
+                const btnNuevo = document.getElementById('btnNuevoProveedor');
+                if (btnNuevo) {
+                    btnNuevo.addEventListener('click', function() {
+                        // Resetear formulario
+                        document.getElementById('formProveedor').reset();
+                        document.getElementById('idProveedor').value = '';
+                        document.getElementById('constanciaPreview').innerHTML = '';
+                        document.getElementById('seccionConstancia').classList.add('d-none');
+                        
+                        // Cambiar título del modal
+                        document.getElementById('tituloModalProveedor').textContent = 'Nuevo Proveedor';
+                        
+                        // Mostrar el modal
+                        new bootstrap.Modal(document.getElementById('modalProveedor')).show();
+                    });
+                }
+                
+                // Botón de guardar proveedor
+                const btnGuardar = document.getElementById('btnGuardarProveedor');
+                if (btnGuardar) {
+                    btnGuardar.addEventListener('click', guardarProveedor);
+                }
+                
+                // Checkbox de constancia
+                const checkConstancia = document.getElementById('tieneConstancia');
+                if (checkConstancia) {
+                    checkConstancia.addEventListener('change', function() {
+                        const seccion = document.getElementById('seccionConstancia');
+                        if (this.checked) {
+                            seccion.classList.remove('d-none');
+                            seccion.classList.add('d-block');
+                        } else {
+                            seccion.classList.remove('d-block');
+                            seccion.classList.add('d-none');
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
