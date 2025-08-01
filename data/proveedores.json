@@ -1,18 +1,67 @@
-{
-  "version": "1.0.0",
-  "lastUpdate": "2025-08-01T00:00:00.000Z",
-  "metadata": {
-    "totalProveedores": 0,
-    "totalContratos": 0,
-    "totalArchivos": 0,
-    "createdBy": "Sistema de GestiÃ³n de Proveedores",
-    "description": "Base de datos de proveedores con integraciÃ³n GitHub"
+[
+  {
+    "id": "prov1",
+    "nombre": "Aceros Industriales S.A.",
+    "direccion": "Av. Industrial #123, Zona Industrial, Ciudad de México",
+    "tieneConstancia": true,
+    "constanciaUrl": "../uploads/constancias/constancia_aceros.pdf",
+    "fechaRegistro": "2025-08-01T19:48:35.864Z",
+    "contratos": [
+      {
+        "id": "cont1",
+        "numero": "CONT-2023-001",
+        "fechaInicio": "2025-08-01",
+        "fechaFin": "2025-11-01",
+        "monto": 150000,
+        "documentoUrl": "../uploads/contratos/contrato_aceros_2023.pdf",
+        "fechaCreacion": "2025-08-01T19:48:35.864Z"
+      }
+    ]
   },
-  "config": {
-    "maxFileSize": 25000000,
-    "allowedFileTypes": [".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png"],
-    "autoBackup": true,
-    "backupInterval": "daily"
+  {
+    "id": "prov2",
+    "nombre": "Suministros Técnicos del Norte",
+    "direccion": "Calle Reforma #456, Monterrey, Nuevo León",
+    "tieneConstancia": false,
+    "fechaRegistro": "2025-07-01T19:48:35.864Z",
+    "contratos": [
+      {
+        "id": "cont2",
+        "numero": "CONT-2023-002",
+        "fechaInicio": "2025-07-01",
+        "fechaFin": "2025-08-16",
+        "monto": 75000,
+        "documentoUrl": "../uploads/contratos/contrato_suministros_2023.pdf",
+        "fechaCreacion": "2025-07-01T19:48:35.864Z"
+      }
+    ]
   },
-  "proveedores": []
-}
+  {
+    "id": "prov3",
+    "nombre": "Distribuidora Eléctrica del Centro",
+    "direccion": "Blvd. Tecnológico #789, Guadalajara, Jalisco",
+    "tieneConstancia": true,
+    "constanciaUrl": "../uploads/constancias/constancia_electrica.pdf",
+    "fechaRegistro": "2025-07-01T19:48:35.864Z",
+    "contratos": [
+      {
+        "id": "cont3",
+        "numero": "CONT-2022-015",
+        "fechaInicio": "2024-01-15",
+        "fechaFin": "2025-01-14",
+        "monto": 200000,
+        "documentoUrl": "../uploads/contratos/contrato_electrica_2022.pdf",
+        "fechaCreacion": "2024-01-15T06:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": "prov4",
+    "nombre": "Servicios Logísticos Integrados",
+    "direccion": "Calzada del Valle #234, San Pedro Garza García, Nuevo León",
+    "tieneConstancia": true,
+    "constanciaUrl": "../uploads/constancias/constancia_logistica.pdf",
+    "fechaRegistro": "2025-08-01T19:48:35.864Z",
+    "contratos": []
+  }
+]
