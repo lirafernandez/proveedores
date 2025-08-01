@@ -2,7 +2,7 @@
   {
     "id": "prov1",
     "nombre": "Aceros Industriales S.A.",
-    "direccion": "Av. Industrial #123, Zona Industrial, Ciudad de México",
+    "direccion": "Av. Industrial #123, Zona Industrial, Ciudad de MÃ©xico",
     "tieneConstancia": true,
     "constanciaUrl": "../uploads/constancias/constancia_aceros.pdf",
     "fechaRegistro": "2025-08-01T19:48:35.864Z",
@@ -20,8 +20,8 @@
   },
   {
     "id": "prov2",
-    "nombre": "Suministros Técnicos del Norte",
-    "direccion": "Calle Reforma #456, Monterrey, Nuevo León",
+    "nombre": "Suministros TÃ©cnicos del Norte",
+    "direccion": "Calle Reforma #456, Monterrey, Nuevo LeÃ³n",
     "tieneConstancia": false,
     "fechaRegistro": "2025-07-01T19:48:35.864Z",
     "contratos": [
@@ -38,8 +38,8 @@
   },
   {
     "id": "prov3",
-    "nombre": "Distribuidora Eléctrica del Centro",
-    "direccion": "Blvd. Tecnológico #789, Guadalajara, Jalisco",
+    "nombre": "Distribuidora ElÃ©ctrica del Centro",
+    "direccion": "Blvd. TecnolÃ³gico #789, Guadalajara, Jalisco",
     "tieneConstancia": true,
     "constanciaUrl": "../uploads/constancias/constancia_electrica.pdf",
     "fechaRegistro": "2025-07-01T19:48:35.864Z",
@@ -57,8 +57,8 @@
   },
   {
     "id": "prov4",
-    "nombre": "Servicios Logísticos Integrados",
-    "direccion": "Calzada del Valle #234, San Pedro Garza García, Nuevo León",
+    "nombre": "Servicios LogÃ­sticos Integrados",
+    "direccion": "Calzada del Valle #234, San Pedro Garza GarcÃ­a, Nuevo LeÃ³n",
     "tieneConstancia": true,
     "constanciaUrl": "../uploads/constancias/constancia_logistica.pdf",
     "fechaRegistro": "2025-08-01T19:48:35.864Z",
