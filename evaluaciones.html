@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZOOMLION - Evaluación de Proveedores</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="static/css/styles.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-building"></i> ZOOMLION
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="proveedores.html">Proveedores</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="evaluaciones.html">Evaluaciones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="importar_proveedores.html">Importar Proveedores</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h1>Evaluación de Proveedores</h1>
+            </div>
+            <div class="col text-end">
+                <button class="btn btn-danger" id="btnBorrarTodosEvaluaciones" title="Borrar todos los proveedores y evaluaciones">
+                    <i class="bi bi-trash"></i> Borrar Todos
+                </button>
+            </div>
+        </div>
+        <!-- Tabla resumen de evaluaciones -->
+        <div id="tablaResumenEvaluaciones" class="mb-4"></div>
+
+        <!-- Selector de Proveedor -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="selectProveedor" class="form-label">Seleccionar Proveedor</label>
+                            <select class="form-select" id="selectProveedor" aria-label="Seleccionar proveedor">
+                                <option value="" selected>Seleccione un proveedor...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="tipoEvaluacion" class="form-label">Tipo de Evaluación</label>
+                            <select class="form-select" id="tipoEvaluacion" aria-label="Seleccionar tipo de evaluación">
+                                <option value="ALTA">Evaluación de Alta</option>
+                                <option value="INTERNA">Evaluación Interna</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario de Evaluación -->
+        <div id="formEvaluacion" class="hidden">
+
+            <!-- Evaluación de Alta (criterios generados dinámicamente) -->
+            <div id="evaluacionAlta" class="card mb-4">
+                <div class="card-header">
+                    <h4>Criterios de Alta</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Se generará dinámicamente desde JavaScript -->
+                </div>
+            </div>
+
+            <!-- Evaluación Interna -->
+            <div id="evaluacionInterna" class="card mb-4 hidden">
+                <div class="card-header">
+                    <h4>Criterios de Evaluación Interna</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Se generará dinámicamente desde JavaScript -->
+                </div>
+            </div>
+
+            <!-- Resultado y Comentarios -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h4>Puntaje Total: <span id="puntajeTotal">0</span>%</h4>
+                        </div>
+                    </div>
+                    
+                    <!-- Sección de Comentarios -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="mb-3">
+                                <i class="fas fa-comment-alt text-info"></i> 
+                                Comentarios y Justificaciones
+                            </h5>
+                            <div class="form-group">
+                                <label for="comentariosEvaluacion" class="form-label">
+                                    <i class="fas fa-edit me-1"></i>
+                                    Agregar comentarios sobre criterios no cumplidos o justificaciones:
+                                </label>
+                                <textarea class="form-control comentarios-textarea" 
+                                          id="comentariosEvaluacion" 
+                                          rows="4" 
+                                          placeholder="Ej: El proveedor no cumple con la carta de opinión positiva debido a... / Se requiere actualización de documentos por..."></textarea>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle text-muted"></i>
+                                    Utiliza este espacio para documentar por qué un proveedor no cumple ciertos criterios, acciones requeridas, o cualquier observación relevante.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Botones -->
+                    <div class="row">
+                        <div class="col-12 text-end">
+                            <button type="button" class="btn btn-secondary me-2" id="btnCancelar">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </button>
+                            <button type="button" class="btn btn-primary" id="btnGuardarEvaluacion">
+                                <i class="fas fa-save me-1"></i>Guardar Evaluación
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script type="module" src="js/evaluaciones.js"></script>
+</body>
+</html>
