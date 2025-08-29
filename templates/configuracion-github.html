@@ -62,26 +62,32 @@
                         <form id="formGitHub">
                             <div class="mb-3">
                                 <label for="githubOwner" class="form-label">Usuario de GitHub *</label>
-                                <input type="text" class="form-control" id="githubOwner" placeholder="lirafernandez" required>
+                                <input type="text" class="form-control" id="githubOwner" placeholder="tu-usuario-de-github" required>
                                 <div class="form-text">Tu nombre de usuario en GitHub</div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="githubRepo" class="form-label">Nombre del Repositorio *</label>
-                                <input type="text" class="form-control" id="githubRepo" placeholder="proveedores" required>
+                                <input type="text" class="form-control" id="githubRepo" placeholder="nombre-del-repositorio" required>
                                 <div class="form-text">Nombre del repositorio donde se guardarán los datos</div>
                             </div>
-                            
+
                             <div class="mb-3">
                                 <label for="githubToken" class="form-label">Token de Acceso Personal *</label>
                                 <input type="password" class="form-control" id="githubToken" placeholder="ghp_xxxxxxxxxx" required>
-                                <div class="form-text">
-                                    <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">
+                                <div class="form-text mb-2">
+                                    <a href="https://github.com/settings/tokens/new?scopes=repo&description=ProveedoresApp" target="_blank" rel="noopener">
                                         Crear token de acceso personal
-                                    </a> con permisos de repo
+                                    </a> con permisos de `repo`.
+                                </div>
+                                <div class="alert alert-warning mt-2">
+                                    <h4 class="alert-heading fs-6"><i class="bi bi-exclamation-triangle-fill"></i> Advertencia de Seguridad</h4>
+                                    <p class="mb-1 small">Su token de acceso se guardará en el almacenamiento local de su navegador. Esto es conveniente, pero puede ser un riesgo de seguridad.</p>
+                                    <hr class="my-2">
+                                    <p class="mb-0 small">Para mayor seguridad, use un token con permisos limitados (solo `repo`) y considere revocarlo cuando ya no lo necesite.</p>
                                 </div>
                             </div>
-                            
+
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="bi bi-check-circle"></i> Guardar Configuración
@@ -94,35 +100,23 @@
                 <!-- Instrucciones -->
                 <div class="card mt-4">
                     <div class="card-header bg-success text-white">
-                        <h2 class="h5 mb-0">Instrucciones de Setup</h2>
+                        <h2 class="h5 mb-0">Instrucciones</h2>
                     </div>
                     <div class="card-body">
                         <ol>
                             <li class="mb-2">
-                                <strong>Crear repositorio en GitHub:</strong>
-                                <ul>
-                                    <li>Ve a <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a></li>
-                                    <li>Nombra tu repositorio (ej: "proveedores")</li>
-                                    <li>Márcalo como <strong>privado</strong> para mayor seguridad</li>
-                                    <li>Crea el repositorio</li>
-                                </ul>
+                                <strong>Crear Repositorio:</strong>
+                                 Crea un repositorio <strong>privado</strong> en GitHub para almacenar tus datos de forma segura.
                             </li>
                             <li class="mb-2">
-                                <strong>Crear token de acceso personal:</strong>
-                                <ul>
-                                    <li>Ve a <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">GitHub Settings → Tokens</a></li>
-                                    <li>Clic en "Generate new token (classic)"</li>
-                                    <li>Selecciona el scope <strong>"repo"</strong></li>
-                                    <li>Copia el token generado</li>
-                                </ul>
+                                <strong>Generar Token:</strong>
+                                <a href="https://github.com/settings/tokens/new?scopes=repo&description=ProveedoresApp" target="_blank" rel="noopener">
+                                    Crea un nuevo token de acceso personal
+                                </a>. Asegúrate de que tenga el permiso `repo`.
                             </li>
                             <li class="mb-2">
-                                <strong>Configurar en esta página:</strong>
-                                <ul>
-                                    <li>Ingresa tu usuario de GitHub: <strong>lirafernandez</strong></li>
-                                    <li>Ingresa el nombre del repositorio: <strong>proveedores</strong></li>
-                                    <li>Pega el token de acceso</li>
-                                </ul>
+                                <strong>Guardar Configuración:</strong>
+                                Completa el formulario de la izquierda con tu usuario, el nombre del repositorio y el token que generaste.
                             </li>
                         </ol>
                     </div>
@@ -137,22 +131,22 @@
                     </div>
                     <div class="card-body">
                         <div class="d-grid gap-2">
+                            <button id="btnProbar" class="btn btn-outline-info" disabled>
+                                <i class="bi bi-check-circle"></i> Probar Conexión
+                            </button>
                             <button id="btnSincronizar" class="btn btn-outline-primary" disabled>
-                                <i class="bi bi-arrow-clockwise"></i> Sincronizar desde GitHub
+                                <i class="bi bi-arrow-clockwise"></i> Descargar de GitHub
                             </button>
                             <button id="btnSubir" class="btn btn-outline-success" disabled>
-                                <i class="bi bi-cloud-upload"></i> Subir datos a GitHub
+                                <i class="bi bi-cloud-upload"></i> Subir a GitHub
                             </button>
                             <button id="btnBackup" class="btn btn-outline-warning" disabled>
                                 <i class="bi bi-archive"></i> Crear Backup
                             </button>
-                            <button id="btnProbar" class="btn btn-outline-info" disabled>
-                                <i class="bi bi-check-circle"></i> Probar Conexión
-                            </button>
                         </div>
-                        
+
                         <hr>
-                        
+
                         <div class="card bg-light">
                             <div class="card-body">
                                 <h6 class="card-title">Estadísticas</h6>
@@ -176,21 +170,21 @@
                             <input class="form-check-input" type="radio" name="modoTrabajo" id="modoLocal" value="local" checked>
                             <label class="form-check-label" for="modoLocal">
                                 <strong>Solo Local</strong><br>
-                                <small>Los datos se guardan solo en este navegador</small>
+                                <small>Los datos se guardan solo en este navegador.</small>
                             </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="modoTrabajo" id="modoHibrido" value="hibrido">
                             <label class="form-check-label" for="modoHibrido">
                                 <strong>Híbrido (Recomendado)</strong><br>
-                                <small>Local + respaldo automático en GitHub</small>
+                                <small>Local + respaldo automático en GitHub.</small>
                             </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="modoTrabajo" id="modoGitHub" value="github">
                             <label class="form-check-label" for="modoGitHub">
                                 <strong>Solo GitHub</strong><br>
-                                <small>Todos los cambios van directo a GitHub</small>
+                                <small>Todos los cambios se leen y escriben directamente en GitHub.</small>
                             </label>
                         </div>
                     </div>
@@ -204,264 +198,12 @@
 
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Custom JS -->
     <script src="../static/js/storage.js"></script>
     <script src="../static/js/ui.js"></script>
     <script src="../static/js/github-storage.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            cargarConfiguracion();
-            actualizarEstadisticas();
-            
-            // Configurar formulario
-            document.getElementById('formGitHub').addEventListener('submit', guardarConfiguracion);
-            
-            // Configurar botones
-            document.getElementById('btnSincronizar').addEventListener('click', sincronizarDatos);
-            document.getElementById('btnSubir').addEventListener('click', subirDatos);
-            document.getElementById('btnBackup').addEventListener('click', crearBackup);
-            document.getElementById('btnProbar').addEventListener('click', probarConexion);
-            
-            // Configurar modo de trabajo
-            document.querySelectorAll('input[name="modoTrabajo"]').forEach(radio => {
-                radio.addEventListener('change', cambiarModoTrabajo);
-            });
-        });
-        
-        function cargarConfiguracion() {
-            try {
-                const configString = localStorage.getItem('github_config');
-                console.log('Cargando configuración GitHub desde localStorage:', configString);
-                
-                const config = JSON.parse(configString || '{}');
-                
-                if (config.owner) {
-                    document.getElementById('githubOwner').value = config.owner;
-                    console.log('Owner cargado:', config.owner);
-                }
-                if (config.repo) {
-                    document.getElementById('githubRepo').value = config.repo;
-                    console.log('Repo cargado:', config.repo);
-                }
-                if (config.token) {
-                    document.getElementById('githubToken').value = config.token;
-                    console.log('Token cargado (ocultado)');
-                }
-                
-                // Actualizar configuración global si existe
-                if (config.owner && config.repo && config.token) {
-                    Object.assign(GITHUB_CONFIG, config);
-                    if (window.githubStorage) {
-                        window.githubStorage.configurarToken(config.token);
-                    }
-                    console.log('Configuración global actualizada');
-                }
-                
-                // Actualizar estado
-                actualizarEstadoGitHub();
-                
-                // Cargar modo de trabajo
-                const modo = localStorage.getItem('modo_trabajo') || 'local';
-                const radioElement = document.querySelector(`input[value="${modo}"]`);
-                if (radioElement) {
-                    radioElement.checked = true;
-                }
-                
-            } catch (error) {
-                console.error('Error al cargar configuración:', error);
-                mostrarNotificacion('Error al cargar configuración guardada', 'warning');
-            }
-        }
-        
-        function guardarConfiguracion(e) {
-            e.preventDefault();
-            
-            const config = {
-                owner: document.getElementById('githubOwner').value.trim(),
-                repo: document.getElementById('githubRepo').value.trim(),
-                token: document.getElementById('githubToken').value.trim()
-            };
-            
-            if (!config.owner || !config.repo || !config.token) {
-                mostrarNotificacion('Por favor complete todos los campos', 'warning');
-                return;
-            }
-            
-            try {
-                // Guardar configuración en localStorage
-                localStorage.setItem('github_config', JSON.stringify(config));
-                
-                // Actualizar configuración global del módulo GitHub
-                Object.assign(GITHUB_CONFIG, config);
-                
-                // Configurar token en el módulo de GitHub
-                if (window.githubStorage) {
-                    window.githubStorage.configurarToken(config.token);
-                }
-                
-                // Actualizar estado
-                actualizarEstadoGitHub();
-                mostrarNotificacion('Configuración guardada correctamente', 'success');
-                
-                console.log('Configuración GitHub guardada:', { owner: config.owner, repo: config.repo, token: '***' });
-                
-            } catch (error) {
-                console.error('Error al guardar configuración:', error);
-                mostrarNotificacion('Error al guardar configuración: ' + error.message, 'danger');
-            }
-        }
-        
-        function actualizarEstadoGitHub() {
-            const estadoDiv = document.getElementById('estadoGitHub');
-            const botones = ['btnSincronizar', 'btnSubir', 'btnBackup', 'btnProbar'];
-            
-            console.log('Actualizando estado GitHub...');
-            console.log('window.githubStorage existe:', !!window.githubStorage);
-            
-            // Verificar configuración desde localStorage
-            const configString = localStorage.getItem('github_config');
-            console.log('Configuración en localStorage:', configString);
-            
-            let configurado = false;
-            
-            if (configString) {
-                try {
-                    const config = JSON.parse(configString);
-                    configurado = !!(config.owner && config.repo && config.token);
-                    console.log('Configuración válida:', configurado, config);
-                } catch (e) {
-                    console.error('Error parseando configuración:', e);
-                }
-            }
-            
-            // También verificar desde el módulo githubStorage si existe
-            if (window.githubStorage && window.githubStorage.configurado) {
-                const moduloConfigurado = window.githubStorage.configurado();
-                console.log('Módulo githubStorage configurado:', moduloConfigurado);
-                configurado = configurado || moduloConfigurado;
-            }
-            
-            if (configurado) {
-                estadoDiv.className = 'alert alert-success';
-                estadoDiv.innerHTML = '<i class="bi bi-check-circle"></i> GitHub configurado correctamente';
-                
-                // Habilitar botones
-                botones.forEach(id => {
-                    const btn = document.getElementById(id);
-                    if (btn) btn.disabled = false;
-                });
-                
-                const estadoConexion = document.getElementById('estadoConexion');
-                if (estadoConexion) {
-                    estadoConexion.className = 'badge bg-success';
-                    estadoConexion.textContent = 'Configurado';
-                }
-                
-                console.log('Estado: GitHub configurado ✅');
-            } else {
-                estadoDiv.className = 'alert alert-warning';
-                estadoDiv.innerHTML = '<i class="bi bi-exclamation-triangle"></i> GitHub no está configurado';
-                
-                // Deshabilitar botones
-                botones.forEach(id => {
-                    const btn = document.getElementById(id);
-                    if (btn) btn.disabled = true;
-                });
-                
-                const estadoConexion = document.getElementById('estadoConexion');
-                if (estadoConexion) {
-                    estadoConexion.className = 'badge bg-secondary';
-                    estadoConexion.textContent = 'No configurado';
-                }
-                
-                console.log('Estado: GitHub NO configurado ❌');
-            }
-        }
-        
-        async function sincronizarDatos() {
-            if (window.githubStorage) {
-                await window.githubStorage.sincronizar();
-                actualizarEstadisticas();
-            }
-        }
-        
-        async function subirDatos() {
-            if (window.githubStorage) {
-                await window.githubStorage.subir();
-                actualizarEstadisticas();
-            }
-        }
-        
-        async function crearBackup() {
-            if (window.githubStorage) {
-                const success = await window.githubStorage.backup();
-                if (success) {
-                    mostrarNotificacion('Backup creado correctamente', 'success');
-                }
-            }
-        }
-        
-        async function probarConexion() {
-            try {
-                mostrarNotificacion('Probando conexión...', 'info');
-                // Intentar hacer una petición simple
-                await window.githubStorage.sincronizar();
-                mostrarNotificacion('Conexión exitosa con GitHub', 'success');
-            } catch (error) {
-                mostrarNotificacion('Error de conexión: ' + error.message, 'danger');
-            }
-        }
-        
-        function actualizarEstadisticas() {
-            const proveedores = obtenerProveedores();
-            document.getElementById('proveedoresLocales').textContent = proveedores.length;
-            
-            const ultimaSync = localStorage.getItem('ultima_sincronizacion');
-            if (ultimaSync) {
-                document.getElementById('ultimaSync').textContent = formatearFecha(ultimaSync);
-            }
-        }
-        
-        function cambiarModoTrabajo(e) {
-            const modo = e.target.value;
-            localStorage.setItem('modo_trabajo', modo);
-            mostrarNotificacion(`Modo de trabajo cambiado a: ${modo}`, 'info');
-        }
-        
-        function mostrarNotificacion(mensaje, tipo = 'info') {
-            // Crear elemento de notificación
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${tipo} alert-dismissible fade show`;
-            alert.innerHTML = `
-                ${mensaje}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            // Buscar contenedor de notificaciones o crear uno
-            let container = document.querySelector('.toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.className = 'position-fixed top-0 end-0 p-3';
-                document.body.appendChild(container);
-            }
-            
-            container.appendChild(alert);
-            
-            // Auto-eliminar después de 5 segundos
-            setTimeout(() => {
-                if (alert.parentNode) {
-                    alert.remove();
-                }
-            }, 5000);
-            
-            console.log(`Notificación [${tipo}]: ${mensaje}`);
-        }
-        
-        function formatearFecha(timestamp) {
-            return new Date(timestamp).toLocaleString('es-ES');
-        }
-    </script>
+    <script src="../static/js/configuracion-github.js"></script>
+
 </body>
 </html>

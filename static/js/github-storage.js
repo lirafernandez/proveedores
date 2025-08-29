@@ -1,18 +1,51 @@
 /**
  * github-storage.js - Sistema de almacenamiento usando GitHub como base de datos
- * 
+ *
  * Este sistema permite usar un repositorio de GitHub como almacenamiento de datos
  * para aplicaciones web estáticas. Es ideal para proyectos pequeños a medianos.
  */
 
-// Configuración de GitHub
+// Configuración de GitHub - Se carga dinámicamente
 const GITHUB_CONFIG = {
-    owner: 'tu-usuario',              // Cambia por tu usuario de GitHub
-    repo: 'datos-proveedores-db',     // Cambia por el nombre de tu repositorio
-    branch: 'main',                   // Rama principal
-    token: null,                      // Token de acceso personal (se configurará después)
-    dataPath: 'data/'                 // Carpeta donde se guardarán los datos
+    owner: null,
+    repo: null,
+    branch: 'main',
+    token: null,
+    dataPath: 'data/'
 };
+
+/**
+ * Carga la configuración de GitHub desde localStorage
+ * @returns {boolean} - true si la configuración se cargó, false en caso contrario
+ */
+function cargarConfiguracionGitHub() {
+    const configStr = localStorage.getItem('github_config');
+    if (configStr) {
+        try {
+            const config = JSON.parse(configStr);
+            GITHUB_CONFIG.owner = config.owner || null;
+            GITHUB_CONFIG.repo = config.repo || null;
+            GITHUB_CONFIG.token = config.token || null;
+            return true;
+        } catch (e) {
+            console.error("Error al parsear la configuración de GitHub desde localStorage", e);
+            return false;
+        }
+    }
+    return false;
+}
+
+/**
+ * Guarda la configuración de GitHub en localStorage
+ * @param {Object} config - Objeto con owner, repo y token
+ */
+function guardarConfiguracionGitHub(config) {
+    localStorage.setItem('github_config', JSON.stringify(config));
+    GITHUB_CONFIG.owner = config.owner;
+    GITHUB_CONFIG.repo = config.repo;
+    GITHUB_CONFIG.token = config.token;
+}
+
 
 /**
  * Configurar token de GitHub
@@ -20,7 +53,11 @@ const GITHUB_CONFIG = {
  */
 function configurarGitHubToken(token) {
     GITHUB_CONFIG.token = token;
-    localStorage.setItem('github_token', token);
+    // Actualizar la configuración guardada
+    const configStr = localStorage.getItem('github_config');
+    const config = configStr ? JSON.parse(configStr) : {};
+    config.token = token;
+    localStorage.setItem('github_config', JSON.stringify(config));
 }
 
 /**
@@ -28,7 +65,7 @@ function configurarGitHubToken(token) {
  */
 function obtenerGitHubToken() {
     if (!GITHUB_CONFIG.token) {
-        GITHUB_CONFIG.token = localStorage.getItem('github_token');
+        cargarConfiguracionGitHub();
     }
     return GITHUB_CONFIG.token;
 }
@@ -40,13 +77,18 @@ function obtenerGitHubToken() {
  * @param {Object} data - Datos a enviar
  */
 async function githubRequest(endpoint, method = 'GET', data = null) {
+    // Asegurarse de que la configuración esté cargada
+    if (!GITHUB_CONFIG.owner || !GITHUB_CONFIG.repo) {
+        cargarConfiguracionGitHub();
+    }
+
     const token = obtenerGitHubToken();
-    if (!token) {
-        throw new Error('Token de GitHub no configurado');
+    if (!token || !GITHUB_CONFIG.owner || !GITHUB_CONFIG.repo) {
+        throw new Error('Token, owner o repo de GitHub no configurado');
     }
 
     const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${endpoint}`;
-    
+
     const options = {
         method,
         headers: {
@@ -61,10 +103,15 @@ async function githubRequest(endpoint, method = 'GET', data = null) {
     }
 
     const response = await fetch(url, options);
-    
+
     if (!response.ok) {
         const error = await response.json();
         throw new Error(`GitHub API Error: ${error.message || response.statusText}`);
+    }
+
+    // Para algunas respuestas (ej. 204 No Content), no hay JSON
+    if (response.status === 204) {
+        return null;
     }
 
     return response.json();
@@ -77,7 +124,7 @@ async function githubRequest(endpoint, method = 'GET', data = null) {
 async function obtenerArchivoGitHub(path) {
     try {
         const response = await githubRequest(`contents/${GITHUB_CONFIG.dataPath}${path}`);
-        
+
         // Decodificar el contenido base64
         const content = atob(response.content);
         return {
@@ -105,7 +152,7 @@ async function obtenerArchivoGitHub(path) {
  */
 async function guardarArchivoGitHub(path, content, sha = null, message = 'Actualizar datos') {
     const encodedContent = btoa(JSON.stringify(content, null, 2));
-    
+
     const data = {
         message,
         content: encodedContent,
@@ -141,15 +188,15 @@ async function guardarProveedoresGitHub(proveedores) {
     try {
         // Obtener SHA actual del archivo
         const currentFile = await obtenerArchivoGitHub('proveedores.json');
-        
+
         // Guardar con el SHA actual
         await guardarArchivoGitHub(
-            'proveedores.json', 
-            proveedores, 
-            currentFile.sha, 
+            'proveedores.json',
+            proveedores,
+            currentFile.sha,
             `Actualizar proveedores - ${new Date().toISOString()}`
         );
-        
+
         mostrarNotificacion('Datos guardados en GitHub correctamente', 'success');
         return true;
     } catch (error) {
@@ -165,16 +212,17 @@ async function guardarProveedoresGitHub(proveedores) {
 async function sincronizarConGitHub() {
     try {
         mostrarNotificacion('Sincronizando con GitHub...', 'info');
-        
+
         // Obtener datos desde GitHub
         const proveedoresGitHub = await obtenerProveedoresGitHub();
-        
+
         // Guardar en localStorage
         if (proveedoresGitHub.length > 0) {
             localStorage.setItem(KEYS.PROVEEDORES, JSON.stringify(proveedoresGitHub));
+            localStorage.setItem('ultima_sincronizacion', new Date().toISOString());
             mostrarNotificacion('Datos sincronizados desde GitHub', 'success');
         }
-        
+
         return proveedoresGitHub;
     } catch (error) {
         console.error('Error en sincronización:', error);
@@ -189,12 +237,12 @@ async function sincronizarConGitHub() {
 async function subirDatosAGitHub() {
     try {
         const proveedoresLocales = obtenerProveedores();
-        
+
         if (proveedoresLocales.length === 0) {
             mostrarNotificacion('No hay datos locales para subir', 'warning');
             return false;
         }
-        
+
         return await guardarProveedoresGitHub(proveedoresLocales);
     } catch (error) {
         console.error('Error al subir datos:', error);
@@ -207,7 +255,8 @@ async function subirDatosAGitHub() {
  * Verificar si GitHub está configurado
  */
 function gitHubConfigurado() {
-    return !!(GITHUB_CONFIG.token && GITHUB_CONFIG.owner && GITHUB_CONFIG.repo);
+    cargarConfiguracionGitHub();
+    return !!(GITHUB_CONFIG.owner && GITHUB_CONFIG.repo && GITHUB_CONFIG.token);
 }
 
 /**
@@ -221,14 +270,14 @@ async function crearBackupAutomatico() {
     try {
         const proveedores = obtenerProveedores();
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        
+
         await guardarArchivoGitHub(
             `backups/proveedores-${timestamp}.json`,
             proveedores,
             null,
             `Backup automático - ${new Date().toLocaleString()}`
         );
-        
+
         return true;
     } catch (error) {
         console.error('Error en backup automático:', error);
@@ -242,7 +291,7 @@ async function crearBackupAutomatico() {
 async function inicializarAlmacenamientoHibrido() {
     // Primero cargar datos locales
     inicializarDatos();
-    
+
     // Si GitHub está configurado, intentar sincronizar
     if (gitHubConfigurado()) {
         try {
@@ -256,6 +305,7 @@ async function inicializarAlmacenamientoHibrido() {
 // Exportar funciones para uso global
 window.githubStorage = {
     configurarToken: configurarGitHubToken,
+    guardarConfiguracion: guardarConfiguracionGitHub,
     sincronizar: sincronizarConGitHub,
     subir: subirDatosAGitHub,
     configurado: gitHubConfigurado,
