@@ -1,0 +1,214 @@
+/* =================================================================
+   Variables Globales de Color
+   ================================================================= */
+:root {
+    --primary-color: #2c5530;
+    --primary-color-dark: #1b4721;
+    --secondary-color: #81c784;
+    --secondary-color-light: #e8f5e9;
+    --text-on-primary: #ffffff;
+    --danger-color: #dc3545;
+    --danger-color-dark: #b02a37;
+    --border-color: #c8e6c9;
+    --transition-speed: 0.3s;
+}
+
+/* =================================================================
+   Estilos Base y Navbar
+   ================================================================= */
+body {
+    background-color: #f8f9fa;
+}
+
+.navbar {
+    background-color: var(--primary-color) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: var(--text-on-primary) !important;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+/* =================================================================
+   Tarjetas (Cards)
+   ================================================================= */
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all var(--transition-speed) ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: var(--secondary-color-light);
+    color: var(--primary-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* =================================================================
+   Botones
+   ================================================================= */
+.btn {
+    border-radius: 25px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: all var(--transition-speed) ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-color-dark);
+    border-color: var(--primary-color-dark);
+}
+
+.btn-info {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: #000;
+}
+
+.btn-info:hover {
+    background-color: #66bb6a;
+    border-color: #66bb6a;
+    color: #000;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.btn-danger:hover {
+    background-color: var(--danger-color-dark);
+    border-color: var(--danger-color-dark);
+}
+
+
+/* =================================================================
+   Tablas
+   ================================================================= */
+.table th {
+    background-color: var(--secondary-color-light);
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--secondary-color);
+}
+
+.table td {
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.table tbody tr {
+    transition: background-color var(--transition-speed) ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f8e9;
+}
+
+/* =================================================================
+   Formularios
+   ================================================================= */
+.form-label {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.25rem rgba(129, 199, 132, 0.25);
+}
+
+/* =================================================================
+   Estilos de Importación (Mejorados)
+   ================================================================= */
+.import-upload-area {
+    border: 2px dashed var(--primary-color);
+    border-radius: 10px;
+    transition: all var(--transition-speed) ease;
+    background-color: #fff;
+}
+
+.import-upload-area:hover {
+    border-color: var(--primary-color-dark);
+    background-color: #f1f8e9;
+}
+
+.table-preview {
+    max-height: 450px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.table-preview thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark)) !important;
+    color: var(--text-on-primary) !important;
+}
+
+/* =================================================================
+   Modales
+   ================================================================= */
+.modal-content {
+    border-radius: 0.75rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border: none;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+    color: var(--text-on-primary);
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+}
+
+.modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* =================================================================
+   Clases de Utilidad y Animaciones
+   ================================================================= */
+.hidden {
+    display: none !important;
+}
+
+.missing-cell {
+    background-color: #ffebee !important;
+    color: #c62828 !important;
+    text-align: center;
+    font-weight: bold;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; translateY(0); }
+}
+
+.table tbody tr, .card {
+    animation: fadeIn 0.5s ease-in-out;
+}
