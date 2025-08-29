@@ -9,6 +9,7 @@ let allProviders = [];
 
 // --- DOMContentLoaded Listener ---
 document.addEventListener('DOMContentLoaded', function() {
+    inicializarDatos(); // Ensure localStorage is initialized
     setupProveedoresPage();
 });
 
