@@ -44,7 +44,7 @@ function guardarProveedor(proveedor) {
 
   if (!proveedor.id) {
     proveedor.id = 'prov_' + Date.now().toString(36) + Math.random().toString(36).substring(2);
-    proveedor.fechaRegistro = new Date().toISOString();
+    proveedor.fechaRegistro = new D-ate().toISOString();
     proveedores.push(proveedor);
   } else {
     const index = proveedores.findIndex(p => p.id === proveedor.id);

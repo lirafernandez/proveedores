@@ -4,8 +4,6 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Event listener for the save button on the contract modal.
-    // Using event delegation on the body in case the modal is not yet in the DOM.
     document.body.addEventListener('click', function(event) {
         if (event.target.id === 'btnGuardarContrato') {
             handleSaveContract();
@@ -16,20 +14,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /**
  * Renders the list of contracts for a provider.
- * @param {Array} contracts - The list of contracts to render.
+ * @param {Object} provider - The provider object containing contracts.
  * @param {HTMLElement} container - The HTML element to render the list into.
  */
-function renderContractList(contracts, container) {
+function renderContractList(provider, container) {
     if (!container) return;
 
-    if (!contracts || contracts.length === 0) {
+    const contracts = provider.contracts || [];
+
+    if (contracts.length === 0) {
         container.innerHTML = `<div class="alert alert-info">No hay contratos registrados.</div>`;
         return;
     }
 
     contracts.sort((a, b) => new Date(a.fechaFin) - new Date(b.fechaFin));
 
-    const html = contracts.map(contract => createContractRowHTML(contract)).join('');
+    const html = contracts.map(contract => createContractRowHTML(provider.id, contract)).join('');
     container.innerHTML = `
         <table class="table table-hover">
             <thead>
@@ -48,10 +48,11 @@ function renderContractList(contracts, container) {
 
 /**
  * Creates the HTML for a single contract row.
+ * @param {string} providerId - The ID of the provider.
  * @param {Object} contract - The contract object.
  * @returns {string} - HTML string for the table row.
  */
-function createContractRowHTML(contract) {
+function createContractRowHTML(providerId, contract) {
     const status = getContractStatus(contract.fechaFin);
 
     return `
@@ -65,8 +66,8 @@ function createContractRowHTML(contract) {
             <td><span class="badge ${status.className}">${status.text}</span></td>
             <td>
                 <div class="btn-group btn-group-sm">
-                    <button class="btn btn-warning" onclick="openEditContractModal('${contract.proveedorId}', '${contract.id}')"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-danger" onclick="confirmDeleteContract('${contract.proveedorId}', '${contract.id}', '${contract.numero}')"><i class="bi bi-trash"></i></button>
+                    <button class="btn btn-warning" onclick="openEditContractModal('${providerId}', '${contract.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-danger" onclick="confirmDeleteContract('${providerId}', '${contract.id}', '${contract.numero}')"><i class="bi bi-trash"></i></button>
                 </div>
             </td>
         </tr>
@@ -121,6 +122,10 @@ function openNewContractModal(providerId) {
  */
 function openEditContractModal(providerId, contractId) {
     const provider = obtenerProveedor(providerId);
+    if (!provider || !provider.contracts) {
+        showNotification('Proveedor o contratos no encontrados', 'danger');
+        return;
+    }
     const contract = provider.contracts.find(c => c.id === contractId);
 
     if (contract) {
@@ -149,7 +154,6 @@ function handleSaveContract() {
 
     const contractData = {
         id: contractId || null,
-        proveedorId: providerId,
         numero: document.getElementById('numeroContrato').value.trim(),
         fechaInicio: document.getElementById('fechaInicio').value,
         fechaFin: document.getElementById('fechaFin').value,
@@ -166,7 +170,6 @@ function handleSaveContract() {
     bootstrap.Modal.getInstance(document.getElementById('modalContrato')).hide();
     showNotification('Contrato guardado con éxito', 'success');
 
-    // Refresh the details view to show the new/updated contract
     viewProviderDetails(providerId);
 }
 

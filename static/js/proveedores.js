@@ -9,19 +9,15 @@ let allProviders = [];
 
 // --- DOMContentLoaded Listener ---
 document.addEventListener('DOMContentLoaded', function() {
-    // This check ensures the code only runs when the provider list view is active.
-    if (document.getElementById('tablaProveedores')) {
-        setupProveedoresPage();
-    }
+    setupProveedoresPage();
 });
 
 /**
  * Sets up the initial state of the providers page.
  */
 function setupProveedoresPage() {
-    // Initial data load
+    renderView(getProviderListViewHTML());
     loadAndRenderProviders();
-    // Setup event listeners
     setupEventListeners();
 }
 
@@ -40,6 +36,7 @@ function loadAndRenderProviders() {
  */
 function renderProviderTable(providers) {
     const tablaProveedores = document.getElementById('tablaProveedores');
+    if (!tablaProveedores) return;
 
     if (!providers || providers.length === 0) {
         tablaProveedores.innerHTML = '<tr><td colspan="6" class="text-center">No hay proveedores registrados.</td></tr>';
@@ -54,10 +51,31 @@ function renderProviderTable(providers) {
  * Sets up all necessary event listeners for the page.
  */
 function setupEventListeners() {
-    document.getElementById('filtroNombre').addEventListener('input', handleFilterChange);
-    document.getElementById('filtroConstancia').addEventListener('change', handleFilterChange);
-    document.getElementById('btnLimpiarFiltros').addEventListener('click', clearFilters);
-    document.getElementById('btnNuevoProveedor').addEventListener('click', openNewProviderModal);
+    // Using event delegation on a parent element for dynamically loaded content
+    const mainContent = document.getElementById('main-content');
+
+    mainContent.addEventListener('input', function(event) {
+        if (event.target.id === 'filtroNombre') {
+            handleFilterChange();
+        }
+    });
+
+    mainContent.addEventListener('change', function(event) {
+        if (event.target.id === 'filtroConstancia') {
+            handleFilterChange();
+        }
+    });
+
+    mainContent.addEventListener('click', function(event) {
+        if (event.target.id === 'btnLimpiarFiltros') {
+            clearFilters();
+        }
+        if (event.target.id === 'btnNuevoProveedor') {
+            openNewProviderModal();
+        }
+    });
+
+    // Modals are outside main-content, so they need their own listeners
     document.getElementById('btnGuardarProveedor').addEventListener('click', handleSaveProvider);
 }
 
@@ -169,7 +187,6 @@ function clearFilters() {
 function displayContractAlerts() {
     const alertasContainer = document.getElementById('alertasContainer');
     if (!alertasContainer) return;
-    // Implementation can be added here based on the original logic if needed.
     alertasContainer.innerHTML = '';
 }
 
@@ -255,13 +272,13 @@ function viewProviderDetails(id) {
 
     if (provider) {
         const contracts = provider.contracts || [];
-        const viewHtml = getProviderDetailsViewHTML(provider, contracts); // from ui.js
-        renderView(viewHtml); // from ui.js
+        const viewHtml = getProviderDetailsViewHTML(provider);
+        renderView(viewHtml);
 
         const contractContainer = document.getElementById('listaContratos');
-        renderContractList(contracts, contractContainer); // from contratos.js
+        renderContractList(provider, contractContainer);
     } else {
         showNotification("No se pudieron cargar los detalles del proveedor.", "danger");
-        loadAndRenderProviders();
+        setupProveedoresPage();
     }
 }
