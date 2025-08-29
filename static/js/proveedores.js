@@ -1,99 +1,118 @@
 /**
- * proveedores.js - Gestión de proveedores
+ * proveedores.js - Business logic for provider management.
+ * This file handles the UI interactions and data manipulation for the providers page,
+ * using localStorage as the data source.
  */
 
-// Cargar datos cuando se inicia la página
+// --- State ---
+let allProviders = [];
+
+// --- DOMContentLoaded Listener ---
 document.addEventListener('DOMContentLoaded', function() {
-    // Verificar si estamos en la página de listado de proveedores
-    if (document.getElementById('tablaProveedores')) {
-        inicializarDatos();
-        cargarListaProveedores();
-        mostrarAlertasContratos();
-
-        // Configurar filtros
-        const filtroNombre = document.getElementById('filtroNombre');
-        const filtroConstancia = document.getElementById('filtroConstancia');
-        const filtroContrato = document.getElementById('filtroContrato');
-
-        if (filtroNombre) filtroNombre.addEventListener('input', filtrarProveedores);
-        if (filtroConstancia) filtroConstancia.addEventListener('change', filtrarProveedores);
-        if (filtroContrato) filtroContrato.addEventListener('change', filtrarProveedores);
-
-        // Botón de limpiar filtros
-        const btnLimpiar = document.getElementById('btnLimpiarFiltros');
-        if (btnLimpiar) btnLimpiar.addEventListener('click', limpiarFiltros);
-    }
+    setupProveedoresPage();
 });
 
 /**
- * Crea el HTML para una fila de la tabla de proveedores
- * @param {Object} proveedor - El objeto del proveedor
- * @returns {string} - El string HTML de la fila
+ * Sets up the initial state of the providers page.
  */
-function crearFilaProveedorHTML(proveedor) {
-    const tieneContratos = proveedor.contratos && proveedor.contratos.length > 0;
-    const numContratos = tieneContratos ? proveedor.contratos.length : 0;
+function setupProveedoresPage() {
+    renderView(getProviderListViewHTML());
+    loadAndRenderProviders();
+    setupEventListeners();
+}
 
-    // Determinar estado del proveedor
-    let estado = 'Activo';
-    let estadoClass = 'bg-success';
+/**
+ * Fetches providers from localStorage, caches them, and renders them.
+ */
+function loadAndRenderProviders() {
+    allProviders = obtenerProveedores(); // from storage.js
+    renderProviderTable(allProviders);
+    displayContractAlerts();
+}
 
-    if (tieneContratos) {
-        const hoy = new Date();
-        const contratoVencido = proveedor.contratos.some(c => new Date(c.fechaFin) < hoy);
+/**
+ * Renders an array of providers into the main table.
+ * @param {Array} providers - The array of provider objects to render.
+ */
+function renderProviderTable(providers) {
+    const tablaProveedores = document.getElementById('tablaProveedores');
+    if (!tablaProveedores) return;
 
-        if (contratoVencido) {
-            estado = 'Contrato vencido';
-            estadoClass = 'bg-danger';
-        } else {
-            const treintaDias = new Date();
-            treintaDias.setDate(treintaDias.getDate() + 30);
-
-            const contratoPorVencer = proveedor.contratos.some(c => {
-                const fechaFin = new Date(c.fechaFin);
-                return fechaFin > hoy && fechaFin <= treintaDias;
-            });
-
-            if (contratoPorVencer) {
-                estado = 'Por vencer';
-                estadoClass = 'bg-warning text-dark';
-            }
-        }
-    } else {
-        estado = 'Sin contratos';
-        estadoClass = 'bg-secondary';
+    if (!providers || providers.length === 0) {
+        tablaProveedores.innerHTML = '<tr><td colspan="6" class="text-center">No hay proveedores registrados.</td></tr>';
+        return;
     }
+
+    const html = providers.map(provider => createProviderRowHTML(provider)).join('');
+    tablaProveedores.innerHTML = html;
+}
+
+/**
+ * Sets up all necessary event listeners for the page.
+ */
+function setupEventListeners() {
+    // Using event delegation on a parent element for dynamically loaded content
+    const mainContent = document.getElementById('main-content');
+
+    mainContent.addEventListener('input', function(event) {
+        if (event.target.id === 'filtroNombre') {
+            handleFilterChange();
+        }
+    });
+
+    mainContent.addEventListener('change', function(event) {
+        if (event.target.id === 'filtroConstancia') {
+            handleFilterChange();
+        }
+    });
+
+    mainContent.addEventListener('click', function(event) {
+        if (event.target.id === 'btnLimpiarFiltros') {
+            clearFilters();
+        }
+        if (event.target.id === 'btnNuevoProveedor') {
+            openNewProviderModal();
+        }
+    });
+
+    // Modals are outside main-content, so they need their own listeners
+    document.getElementById('btnGuardarProveedor').addEventListener('click', handleSaveProvider);
+}
+
+/**
+ * Creates the HTML for a single provider row in the table.
+ * @param {Object} provider - The provider object.
+ * @returns {string} - The HTML string for the table row.
+ */
+function createProviderRowHTML(provider) {
+    const contracts = provider.contracts || [];
+    const numContracts = contracts.length;
+    const status = getProviderStatus(provider);
 
     return `
         <tr>
-            <td>${proveedor.nombre}</td>
-            <td>${proveedor.direccion || '<span class="text-muted">No registrada</span>'}</td>
+            <td>${provider.nombre}</td>
+            <td>${provider.direccion || '<span class="text-muted">No registrada</span>'}</td>
             <td>
-                ${proveedor.tieneConstancia ?
+                ${provider.tieneConstancia ?
                     '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Sí</span>' :
                     '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> No</span>'}
             </td>
             <td>
-                ${numContratos > 0 ?
-                    `<a href="detalle-provedor.html?id=${proveedor.id}" class="badge bg-primary text-decoration-none">
-                        <i class="bi bi-file-text"></i> ${numContratos} contrato(s)
-                    </a>` :
-                    '<span class="badge bg-secondary"><i class="bi bi-dash-circle"></i> Sin contratos</span>'}
+                <a href="#" onclick="viewProviderDetails('${provider.id}')" class="badge bg-primary text-decoration-none">
+                    <i class="bi bi-file-text"></i> ${numContracts} contrato(s)
+                </a>
             </td>
-            <td><span class="badge ${estadoClass}">${estado}</span></td>
+            <td><span class="badge ${status.className}">${status.text}</span></td>
             <td>
                 <div class="btn-group btn-group-sm">
-                    <a href="detalle-provedor.html?id=${proveedor.id}" class="btn btn-primary" title="Ver detalles">
+                    <button class="btn btn-primary" onclick="viewProviderDetails('${provider.id}')" title="Ver detalles">
                         <i class="bi bi-eye"></i>
-                    </a>
-                    ${tieneContratos || proveedor.tieneConstancia ?
-                        `<button class="btn btn-info" onclick="verDocumentosProveedor('${proveedor.id}')" title="Ver documentos">
-                            <i class="bi bi-file-earmark-pdf"></i>
-                        </button>` : ''}
-                    <button class="btn btn-warning" onclick="editarProveedor('${proveedor.id}')" title="Editar">
+                    </button>
+                    <button class="btn btn-warning" onclick="openEditProviderModal('${provider.id}')" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-danger" onclick="confirmarEliminarProveedor('${proveedor.id}', '${proveedor.nombre}')" title="Eliminar">
+                    <button class="btn btn-danger" onclick="confirmDeleteProvider('${provider.id}', '${provider.nombre}')" title="Eliminar">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
@@ -102,296 +121,164 @@ function crearFilaProveedorHTML(proveedor) {
     `;
 }
 
-// Función para cargar lista de proveedores
-function cargarListaProveedores() {
-    const tablaProveedores = document.getElementById('tablaProveedores');
-    if (!tablaProveedores) return;
-
-    const proveedores = obtenerProveedores();
-
-    if (proveedores.length === 0) {
-        tablaProveedores.innerHTML = '<tr><td colspan="6" class="text-center">No hay proveedores registrados</td></tr>';
-        return;
+/**
+ * Determines the status of a provider based on their contracts.
+ * @param {Object} provider - The provider object.
+ * @returns {{text: string, className: string}} - The status text and Bootstrap class.
+ */
+function getProviderStatus(provider) {
+    if (!provider.contracts || provider.contracts.length === 0) {
+        return { text: 'Sin Contratos', className: 'bg-secondary' };
     }
 
-    let html = '';
-    proveedores.forEach(function(proveedor) {
-        html += crearFilaProveedorHTML(proveedor);
-    });
-    tablaProveedores.innerHTML = html;
-}
-
-// Función para filtrar proveedores
-function filtrarProveedores() {
-    const textoBusqueda = document.getElementById('filtroNombre').value.toLowerCase();
-    const filtroConstancia = document.getElementById('filtroConstancia').value;
-    const filtroContrato = document.getElementById('filtroContrato').value;
-
-    let proveedores = obtenerProveedores();
-
-    // Aplicar filtros
-    proveedores = proveedores.filter(function(proveedor) {
-        // Filtro por nombre
-        if (textoBusqueda && !proveedor.nombre.toLowerCase().includes(textoBusqueda)) {
-            return false;
-        }
-
-        // Filtro por constancia
-        if (filtroConstancia !== '') {
-            const tieneConstancia = filtroConstancia === "true";
-
-            if (proveedor.tieneConstancia !== tieneConstancia) {
-                return false;
-            }
-        }
-
-        // Filtro por contrato
-        if (filtroContrato !== '') {
-            const tieneContratos = filtroContrato === "true";
-            const proveedorTieneContratos = proveedor.contratos && proveedor.contratos.length > 0;
-
-            if (proveedorTieneContratos !== tieneContratos) {
-                return false;
-            }
-        }
-
-        return true;
-    });
-
-    // Actualizar tabla con resultados filtrados
-    const tablaProveedores = document.getElementById('tablaProveedores');
-
-    if (proveedores.length === 0) {
-        tablaProveedores.innerHTML = '<tr><td colspan="6" class="text-center">No se encontraron proveedores con los filtros seleccionados</td></tr>';
-        return;
+    const hoy = new Date();
+    const hasExpired = provider.contracts.some(c => new Date(c.fechaFin) < hoy);
+    if (hasExpired) {
+        return { text: 'Contrato Vencido', className: 'bg-danger' };
     }
 
-    let html = '';
-    proveedores.forEach(function(proveedor) {
-        html += crearFilaProveedorHTML(proveedor);
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(hoy.getDate() + 30);
+    const hasExpiring = provider.contracts.some(c => {
+        const endDate = new Date(c.fechaFin);
+        return endDate >= hoy && endDate <= thirtyDaysFromNow;
     });
-    tablaProveedores.innerHTML = html;
+    if (hasExpiring) {
+        return { text: 'Contrato por Vencer', className: 'bg-warning text-dark' };
+    }
+
+    return { text: 'Activo', className: 'bg-success' };
 }
 
-// Función para limpiar filtros
-function limpiarFiltros() {
+
+/**
+ * Handles changes in the filter inputs and re-renders the table.
+ */
+function handleFilterChange() {
+    const nameFilter = document.getElementById('filtroNombre').value.toLowerCase();
+    const constanciaFilter = document.getElementById('filtroConstancia').value;
+
+    const filteredProviders = allProviders.filter(provider => {
+        const nameMatch = provider.nombre.toLowerCase().includes(nameFilter);
+
+        let constanciaMatch = true;
+        if (constanciaFilter !== '') {
+            constanciaMatch = provider.tieneConstancia === (constanciaFilter === 'true');
+        }
+
+        return nameMatch && constanciaMatch;
+    });
+
+    renderProviderTable(filteredProviders);
+}
+
+/**
+ * Clears all filter inputs and re-renders the original list.
+ */
+function clearFilters() {
     document.getElementById('filtroNombre').value = '';
     document.getElementById('filtroConstancia').value = '';
-    document.getElementById('filtroContrato').value = '';
-    cargarListaProveedores();
+    renderProviderTable(allProviders);
 }
 
-// Función para mostrar alertas de contratos por vencer o vencidos
-function mostrarAlertasContratos() {
+/**
+ * Displays alerts for contracts that are expiring soon or have expired.
+ */
+function displayContractAlerts() {
     const alertasContainer = document.getElementById('alertasContainer');
     if (!alertasContainer) return;
-
     alertasContainer.innerHTML = '';
-
-    const proveedores = obtenerProveedores();
-    const hoy = new Date();
-    const treintaDias = new Date();
-    treintaDias.setDate(treintaDias.getDate() + 30);
-
-    // Verificar si hay contratos vencidos o por vencer
-    const contratosVencidos = [];
-    const contratosPorVencer = [];
-
-    proveedores.forEach(function(proveedor) {
-        if (proveedor.contratos && proveedor.contratos.length > 0) {
-            proveedor.contratos.forEach(function(contrato) {
-                const fechaFin = new Date(contrato.fechaFin);
-
-                if (fechaFin < hoy) {
-                    contratosVencidos.push({
-                        proveedor: proveedor.nombre,
-                        proveedorId: proveedor.id,
-                        contrato: contrato.numero,
-                        fechaFin: fechaFin
-                    });
-                } else if (fechaFin <= treintaDias) {
-                    const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
-                    contratosPorVencer.push({
-                        proveedor: proveedor.nombre,
-                        proveedorId: proveedor.id,
-                        contrato: contrato.numero,
-                        fechaFin: fechaFin,
-                        diasRestantes: diasRestantes
-                    });
-                }
-            });
-        }
-    });
-
-    // Mostrar alertas de contratos vencidos
-    if (contratosVencidos.length > 0) {
-        const alertaVencidos = document.createElement('div');
-        alertaVencidos.className = 'alert alert-danger';
-        alertaVencidos.innerHTML = `
-            <h5><i class="bi bi-exclamation-triangle-fill"></i> Contratos Vencidos (${contratosVencidos.length})</h5>
-            <ul class="mb-0">
-                ${contratosVencidos.map(c => `
-                    <li>
-                        <a href="detalle-provedor.html?id=${c.proveedorId}" class="alert-link">
-                            ${c.proveedor} - Contrato ${c.contrato}
-                        </a>
-                        <span class="text-muted">
-                            (Venció el ${c.fechaFin.toLocaleDateString()})
-                        </span>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
-        alertasContainer.appendChild(alertaVencidos);
-    }
-
-    // Mostrar alertas de contratos por vencer
-    if (contratosPorVencer.length > 0) {
-        const alertaPorVencer = document.createElement('div');
-        alertaPorVencer.className = 'alert alert-warning';
-        alertaPorVencer.innerHTML = `
-            <h5><i class="bi bi-clock-fill"></i> Contratos por Vencer (${contratosPorVencer.length})</h5>
-            <ul class="mb-0">
-                ${contratosPorVencer.map(c => `
-                    <li>
-                        <a href="detalle-provedor.html?id=${c.proveedorId}" class="alert-link">
-                            ${c.proveedor} - Contrato ${c.contrato}
-                        </a>
-                        <span class="text-muted">
-                            (Vence en ${c.diasRestantes} día${c.diasRestantes !== 1 ? 's' : ''}: ${c.fechaFin.toLocaleDateString()})
-                        </span>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
-        alertasContainer.appendChild(alertaPorVencer);
-    }
 }
 
-// Función para editar proveedor
-function editarProveedor(id) {
-    const proveedor = obtenerProveedor(id);
-    if (!proveedor) {
-        mostrarNotificacion('Proveedor no encontrado', 'danger');
-        return;
-    }
-
-    // Llenar el formulario
-    document.getElementById('idProveedor').value = id;
-    document.getElementById('nombreProveedor').value = proveedor.nombre || '';
-    document.getElementById('direccionProveedor').value = proveedor.direccion || '';
-    document.getElementById('tieneConstancia').checked = proveedor.tieneConstancia || false;
-
-    // Mostrar/ocultar sección de constancia
-    document.getElementById('seccionConstancia').style.display =
-        proveedor.tieneConstancia ? 'block' : 'none';
-
-    // Mostrar constancia si existe
-    if (proveedor.tieneConstancia && proveedor.constanciaUrl) {
-        document.getElementById('constanciaPreview').innerHTML = `
-            <div class="alert alert-info">
-                <i class="bi bi-file-earmark-text"></i>
-                <a href="${proveedor.constanciaUrl}" target="_blank">Ver constancia actual</a>
-            </div>
-        `;
-    } else {
-        document.getElementById('constanciaPreview').innerHTML = '';
-    }
-
-    // Actualizar título del modal
-    document.getElementById('tituloModalProveedor').textContent = 'Editar Proveedor';
-
-    // Mostrar el modal
+/**
+ * Opens the modal to create a new provider.
+ */
+function openNewProviderModal() {
+    document.getElementById('formProveedor').reset();
+    document.getElementById('idProveedor').value = '';
+    document.getElementById('tituloModalProveedor').textContent = 'Nuevo Proveedor';
     new bootstrap.Modal(document.getElementById('modalProveedor')).show();
 }
 
-// Función para confirmar eliminación de proveedor
-function confirmarEliminarProveedor(id, nombre) {
-    document.getElementById('nombreProveedorEliminar').textContent = nombre;
+/**
+ * Opens the modal to edit an existing provider.
+ * @param {string} id - The ID of the provider to edit.
+ */
+function openEditProviderModal(id) {
+    const provider = obtenerProveedor(id);
+    if (!provider) {
+        showNotification('Proveedor no encontrado', 'danger');
+        return;
+    }
 
-    document.getElementById('btnConfirmarEliminar').onclick = function() {
-        eliminarProveedor(id);
-        bootstrap.Modal.getInstance(document.getElementById('modalConfirmacion')).hide();
-    };
+    document.getElementById('idProveedor').value = provider.id;
+    document.getElementById('nombreProveedor').value = provider.nombre || '';
+    document.getElementById('direccionProveedor').value = provider.direccion || '';
+    document.getElementById('tieneConstancia').checked = provider.tieneConstancia || false;
 
-    new bootstrap.Modal(document.getElementById('modalConfirmacion')).show();
+    document.getElementById('tituloModalProveedor').textContent = 'Editar Proveedor';
+    new bootstrap.Modal(document.getElementById('modalProveedor')).show();
 }
 
-// Función para guardar proveedor
-function guardarProveedor() {
+/**
+ * Handles the logic for saving a new or existing provider.
+ */
+function handleSaveProvider() {
     const id = document.getElementById('idProveedor').value;
     const nombre = document.getElementById('nombreProveedor').value.trim();
     const direccion = document.getElementById('direccionProveedor').value.trim();
     const tieneConstancia = document.getElementById('tieneConstancia').checked;
 
-    // Validación básica
     if (!nombre) {
-        mostrarNotificacion('El nombre del proveedor es obligatorio', 'warning');
+        showNotification('El nombre es obligatorio', 'warning');
         return;
     }
 
-    // Preparar datos del proveedor
-    const proveedor = {
-        id: id || undefined,
-        nombre,
-        direccion,
-        tieneConstancia
-    };
+    const providerData = { id: id || null, nombre, direccion, tieneConstancia };
 
-    // Si es una edición, mantener datos existentes
-    if (id) {
-        const proveedorExistente = obtenerProveedor(id);
-        if (proveedorExistente) {
-            // Mantener constancia si existe
-            if (proveedorExistente.tieneConstancia && proveedorExistente.constanciaUrl) {
-                proveedor.constanciaUrl = proveedorExistente.constanciaUrl;
-            }
+    guardarProveedor(providerData);
 
-            // Mantener contratos si existen
-            if (proveedorExistente.contratos) {
-                proveedor.contratos = proveedorExistente.contratos;
-            }
-
-            // Mantener fecha de registro
-            proveedor.fechaRegistro = proveedorExistente.fechaRegistro;
-        }
-    } else {
-        // Nueva fecha de registro para nuevo proveedor
-        proveedor.fechaRegistro = new Date().toISOString();
-    }
-
-    // Procesar archivo de constancia si se subió uno
-    const inputConstancia = document.getElementById('archivoConstancia');
-    if (tieneConstancia && inputConstancia && inputConstancia.files.length > 0) {
-        const file = inputConstancia.files[0];
-        // Simular URL para el archivo (en producción, aquí se subiría al servidor)
-        proveedor.constanciaUrl = `../uploads/constancias/${file.name}`;
-    }
-
-    try {
-        // Guardar proveedor en el almacenamiento usando la función del storage.js
-        const proveedorId = guardarProveedor(proveedor);
-
-        // Cerrar el modal
-        bootstrap.Modal.getInstance(document.getElementById('modalProveedor')).hide();
-
-        // Mostrar notificación
-        mostrarNotificacion(
-            id ? 'Proveedor actualizado correctamente' : 'Proveedor creado correctamente',
-            'success'
-        );
-
-        // Recargar la lista y las alertas
-        cargarListaProveedores();
-        mostrarAlertasContratos();
-    } catch (error) {
-        console.error('Error al guardar proveedor:', error);
-        mostrarNotificacion('Error al guardar el proveedor', 'danger');
-    }
+    bootstrap.Modal.getInstance(document.getElementById('modalProveedor')).hide();
+    showNotification('Proveedor guardado con éxito', 'success');
+    loadAndRenderProviders();
 }
 
-// Función para ver documentos de un proveedor específico
-function verDocumentosProveedor(proveedorId) {
-    // Redirigir a ver-documentos.html con filtro del proveedor
-    window.location.href = `ver-documentos.html?proveedor=${proveedorId}`;
+/**
+ * Shows a confirmation dialog before deleting a provider.
+ * @param {string} id - The ID of the provider to delete.
+ * @param {string} name - The name of the provider.
+ */
+function confirmDeleteProvider(id, name) {
+    const modal = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
+    document.getElementById('nombreProveedorEliminar').textContent = name;
+
+    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+    btnConfirmar.onclick = () => {
+        eliminarProveedor(id);
+        modal.hide();
+        showNotification('Proveedor eliminado con éxito', 'success');
+        loadAndRenderProviders();
+    };
+
+    modal.show();
+}
+
+/**
+ * Displays the details for a specific provider.
+ * @param {string} id - The ID of the provider to view.
+ */
+function viewProviderDetails(id) {
+    const provider = obtenerProveedor(id);
+
+    if (provider) {
+        const contracts = provider.contracts || [];
+        const viewHtml = getProviderDetailsViewHTML(provider);
+        renderView(viewHtml);
+
+        const contractContainer = document.getElementById('listaContratos');
+        renderContractList(provider, contractContainer);
+    } else {
+        showNotification("No se pudieron cargar los detalles del proveedor.", "danger");
+        setupProveedoresPage();
+    }
 }

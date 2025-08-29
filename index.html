@@ -15,7 +15,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="index.html">
+            <a class="navbar-brand" href="#" onclick="event.preventDefault(); setupProveedoresPage();">
                 <i class="bi bi-building"></i> Gestión de Proveedores
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Mostrar menú">
@@ -23,277 +23,120 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link active" href="index.html">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="templates/lista-proveedores.html">Proveedores</a></li>
-                    <li class="nav-item"><a class="nav-link" href="templates/ver-documentos.html">Documentos</a></li>
-                    <li class="nav-item"><a class="nav-link" href="templates/configuracion-github.html">
-                        <i class="bi bi-github"></i> GitHub
-                    </a></li>
-                    <li class="nav-item"><a class="nav-link" href="templates/admin-archivos.html">
-                        <i class="bi bi-files"></i> Archivos
-                    </a></li>
-                    <li class="nav-item"><a class="nav-link" href="templates/migrar-github.html">
-                        <i class="bi bi-cloud-upload"></i> Migrar
-                    </a></li>
+                    <li class="nav-item"><a class="nav-link active" href="#" onclick="event.preventDefault(); setupProveedoresPage();">Proveedores</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <!-- Hero Section -->
-        <div class="row mb-5">
-            <div class="col-12">
-                <div class="jumbotron bg-gradient text-white rounded hero-section">
-                    <h1 class="display-4 fw-bold">Sistema de Gestión de Proveedores</h1>
-                    <p class="lead">Gestiona tus proveedores, contratos y documentos con respaldo automático en GitHub</p>
-                    <hr class="my-4 hero-divider">
-                    <p class="fs-5">Una solución completa para administrar información de proveedores con almacenamiento seguro en la nube.</p>
-                    <div class="d-flex gap-3 mt-4 flex-wrap justify-content-center justify-content-md-start">
-                        <a class="btn btn-light btn-lg shadow" href="templates/lista-proveedores.html" role="button">
-                            <i class="bi bi-people me-2"></i> Ver Proveedores
-                        </a>
-                        <a class="btn btn-outline-light btn-lg shadow" href="templates/configuracion-github.html" role="button">
-                            <i class="bi bi-gear me-2"></i> Configurar Sistema
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="container mt-4" id="main-content">
+        <!-- Contenido dinámico se cargará aquí -->
+    </div>
 
-        <!-- Features -->
-        <div class="row mb-5 g-4">
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-people-fill text-primary icon-large mb-3"></i>
-                        <h5 class="card-title mt-3 mb-3">Gestión de Proveedores</h5>
-                        <p class="card-text mb-4">Administra información completa de tus proveedores: datos fiscales, contactos y constancias de situación fiscal.</p>
-                        <a href="templates/lista-proveedores.html" class="btn btn-primary btn-lg w-100">
-                            <i class="bi bi-people me-2"></i> Ver Proveedores
-                        </a>
-                    </div>
+    <!-- Modals -->
+    <!-- Modal para Proveedor -->
+    <div class="modal fade" id="modalProveedor" tabindex="-1" aria-labelledby="tituloModalProveedor" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModalProveedor">Nuevo Proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-file-earmark-pdf-fill text-success icon-large mb-3"></i>
-                        <h5 class="card-title mt-3 mb-3">Contratos y Documentos</h5>
-                        <p class="card-text mb-4">Almacena y organiza contratos, constancias fiscales y documentos importantes en formato PDF de manera segura.</p>
-                        <a href="templates/admin-archivos.html" class="btn btn-success btn-lg w-100">
-                            <i class="bi bi-files me-2"></i> Gestionar Archivos
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body text-center p-4">
-                        <i class="bi bi-cloud-upload-fill text-info icon-large mb-3"></i>
-                        <h5 class="card-title mt-3 mb-3">Respaldo en GitHub</h5>
-                        <p class="card-text mb-4">Sincronización automática con GitHub para respaldo seguro y acceso desde cualquier lugar del mundo.</p>
-                        <a href="templates/configuracion-github.html" class="btn btn-info btn-lg w-100">
-                            <i class="bi bi-github me-2"></i> Configurar GitHub
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="row mb-5">
-            <div class="col-12">
-                <div class="card shadow">
-                    <div class="card-header bg-dark text-white">
-                        <h4 class="mb-0"><i class="bi bi-lightning me-2"></i> Acciones Rápidas</h4>
-                    </div>
-                    <div class="card-body p-4">
-                        <div class="row g-3">
-                            <div class="col-md-3 col-sm-6">
-                                <div class="d-grid">
-                                    <button class="btn btn-outline-primary btn-lg h-100 p-3" onclick="agregarProveedor()">
-                                        <i class="bi bi-plus-circle fs-2 d-block mb-2"></i>
-                                        <span class="fw-semibold">Agregar Proveedor</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="d-grid">
-                                    <button class="btn btn-outline-success btn-lg h-100 p-3" onclick="subirDocumento()">
-                                        <i class="bi bi-upload fs-2 d-block mb-2"></i>
-                                        <span class="fw-semibold">Subir Documento</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="d-grid">
-                                    <button class="btn btn-outline-info btn-lg h-100 p-3" onclick="sincronizarGitHub()">
-                                        <i class="bi bi-arrow-repeat fs-2 d-block mb-2"></i>
-                                        <span class="fw-semibold">Sincronizar GitHub</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="d-grid">
-                                    <button class="btn btn-outline-warning btn-lg h-100 p-3" onclick="verEstadisticas()">
-                                        <i class="bi bi-graph-up fs-2 d-block mb-2"></i>
-                                        <span class="fw-semibold">Ver Estadísticas</span>
-                                    </button>
-                                </div>
-                            </div>
+                <div class="modal-body">
+                    <form id="formProveedor">
+                        <input type="hidden" id="idProveedor">
+                        <div class="mb-3">
+                            <label for="nombreProveedor" class="form-label">Nombre del Proveedor *</label>
+                            <input type="text" class="form-control" id="nombreProveedor" required>
                         </div>
-                    </div>
+                        <div class="mb-3">
+                            <label for="direccionProveedor" class="form-label">Dirección</label>
+                            <textarea class="form-control" id="direccionProveedor" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input class="form-check-input" type="checkbox" id="tieneConstancia">
+                            <label class="form-check-label" for="tieneConstancia">Requiere constancia</label>
+                        </div>
+                    </form>
                 </div>
-            </div>
-        </div>
-
-        <!-- Status Panel -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card shadow">
-                    <div class="card-header bg-secondary text-white">
-                        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i> Estado del Sistema</h5>
-                    </div>
-                    <div class="card-body p-4">
-                        <div class="row text-center g-3">
-                            <div class="col-md-3 col-sm-6">
-                                <div class="border rounded p-4 h-100">
-                                    <h3 class="text-primary display-6 fw-bold" id="totalProveedores">0</h3>
-                                    <p class="mb-0 fw-semibold text-muted">Proveedores Registrados</p>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="border rounded p-4 h-100">
-                                    <h3 class="text-success display-6 fw-bold" id="totalContratos">0</h3>
-                                    <p class="mb-0 fw-semibold text-muted">Contratos Activos</p>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="border rounded p-4 h-100">
-                                    <h3 class="text-info display-6 fw-bold" id="totalArchivos">0</h3>
-                                    <p class="mb-0 fw-semibold text-muted">Archivos Almacenados</p>
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-sm-6">
-                                <div class="border rounded p-4 h-100">
-                                    <h3 class="display-6 fw-bold" id="estadoGitHub">❌</h3>
-                                    <p class="mb-0 fw-semibold text-muted">Estado GitHub</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-4 text-center">
-                            <small class="text-muted fw-medium">
-                                <i class="bi bi-clock me-1"></i>
-                                Última actualización: <span id="ultimaActualizacion" class="fw-semibold">Cargando...</span>
-                            </small>
-                        </div>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarProveedor">Guardar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-4 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <p class="mb-2 fs-6">&copy; 2025 Sistema de Gestión de Proveedores - Powered by GitHub Pages</p>
-                    <small class="text-muted">Versión 1.0 - Desarrollado para gestión empresarial moderna</small>
+    <!-- Modal para Contrato -->
+    <div class="modal fade" id="modalContrato" tabindex="-1" aria-labelledby="tituloModalContrato" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModalContrato">Nuevo Contrato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-            </div>
-            <hr class="mt-3 mb-3 footer-divider">
-            <div class="row">
-                <div class="col-12">
-                    <small class="text-muted">
-                        <i class="bi bi-shield-check me-1"></i> Almacenamiento seguro
-                        <span class="mx-2">•</span>
-                        <i class="bi bi-cloud me-1"></i> Respaldo automático
-                        <span class="mx-2">•</span>
-                        <i class="bi bi-lock me-1"></i> Datos encriptados
-                    </small>
+                <div class="modal-body">
+                    <form id="formContrato" data-provider-id="">
+                        <input type="hidden" id="contratoId">
+                        <div class="mb-3">
+                            <label for="numeroContrato" class="form-label">Número de Contrato *</label>
+                            <input type="text" class="form-control" id="numeroContrato" required>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="fechaInicio" class="form-label">Fecha de inicio *</label>
+                                <input type="date" class="form-control" id="fechaInicio" required>
+                            </div>
+                            <div class="col">
+                                <label for="fechaFin" class="form-label">Fecha de fin *</label>
+                                <input type="date" class="form-control" id="fechaFin" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="montoContrato" class="form-label">Monto (MXN) *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="montoContrato" min="0" step="0.01" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="btnGuardarContrato">Guardar</button>
                 </div>
             </div>
         </div>
-    </footer>
+    </div>
 
-    <!-- Bootstrap Bundle with Popper -->
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="modalConfirmacion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirmar eliminación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro que desea eliminar el proveedor <strong id="nombreProveedorEliminar"></strong>?</p>
+                    <p class="text-danger">Esta acción eliminará también todos los contratos asociados y no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificaciones -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <!-- JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JS -->
     <script src="static/js/storage.js"></script>
     <script src="static/js/ui.js"></script>
-    <script src="static/js/github-storage.js"></script>
     <script src="static/js/proveedores.js"></script>
-    
-    <script>
-        // Inicialización de la página principal
-        document.addEventListener('DOMContentLoaded', function() {
-            cargarEstadisticasPrincipal();
-            verificarEstadoGitHub();
-        });
-        
-        function cargarEstadisticasPrincipal() {
-            try {
-                const proveedores = obtenerProveedores();
-                let totalContratos = 0;
-                let totalArchivos = 0;
-                
-                proveedores.forEach(proveedor => {
-                    if (proveedor.constanciaData) totalArchivos++;
-                    if (proveedor.contratos) {
-                        totalContratos += proveedor.contratos.length;
-                        proveedor.contratos.forEach(contrato => {
-                            if (contrato.documentoData) totalArchivos++;
-                        });
-                    }
-                });
-                
-                document.getElementById('totalProveedores').textContent = proveedores.length;
-                document.getElementById('totalContratos').textContent = totalContratos;
-                document.getElementById('totalArchivos').textContent = totalArchivos;
-                document.getElementById('ultimaActualizacion').textContent = new Date().toLocaleString();
-                
-            } catch (error) {
-                console.error('Error al cargar estadísticas:', error);
-            }
-        }
-        
-        function verificarEstadoGitHub() {
-            const estadoGitHub = document.getElementById('estadoGitHub');
-            
-            if (window.githubStorage && window.githubStorage.configurado()) {
-                estadoGitHub.textContent = '✅';
-                estadoGitHub.className = 'text-success';
-            } else {
-                estadoGitHub.textContent = '❌';
-                estadoGitHub.className = 'text-danger';
-            }
-        }
-        
-        // Funciones de acciones rápidas
-        function agregarProveedor() {
-            window.location.href = 'templates/lista-proveedores.html';
-        }
-        
-        function subirDocumento() {
-            window.location.href = 'templates/admin-archivos.html';
-        }
-        
-        function sincronizarGitHub() {
-            if (window.githubStorage && window.githubStorage.configurado()) {
-                window.location.href = 'templates/migrar-github.html';
-            } else {
-                if (confirm('GitHub no está configurado. ¿Deseas configurarlo ahora?')) {
-                    window.location.href = 'templates/configuracion-github.html';
-                }
-            }
-        }
-        
-        function verEstadisticas() {
-            window.location.href = 'templates/admin-archivos.html';
-        }
-    </script>
+    <script src="static/js/contratos.js"></script>
 </body>
 </html>
