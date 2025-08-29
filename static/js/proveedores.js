@@ -1,99 +1,179 @@
 /**
- * proveedores.js - Gestión de proveedores
+ * proveedores.js - Business logic for provider management.
+ * This file handles the UI interactions and data manipulation for the providers page.
+ * It uses async/await to interact with the Supabase backend.
  */
 
-// Cargar datos cuando se inicia la página
-document.addEventListener('DOMContentLoaded', function() {
-    // Verificar si estamos en la página de listado de proveedores
-    if (document.getElementById('tablaProveedores')) {
-        inicializarDatos();
-        cargarListaProveedores();
-        mostrarAlertasContratos();
+// --- State ---
+let allProviders = []; // Cache for all providers to reduce DB calls
 
-        // Configurar filtros
-        const filtroNombre = document.getElementById('filtroNombre');
-        const filtroConstancia = document.getElementById('filtroConstancia');
-        const filtroContrato = document.getElementById('filtroContrato');
-
-        if (filtroNombre) filtroNombre.addEventListener('input', filtrarProveedores);
-        if (filtroConstancia) filtroConstancia.addEventListener('change', filtrarProveedores);
-        if (filtroContrato) filtroContrato.addEventListener('change', filtrarProveedores);
-
-        // Botón de limpiar filtros
-        const btnLimpiar = document.getElementById('btnLimpiarFiltros');
-        if (btnLimpiar) btnLimpiar.addEventListener('click', limpiarFiltros);
-    }
+// --- DOMContentLoaded Listener ---
+document.addEventListener('DOMContentLoaded', async function() {
+    // Since this is a single-page app, we'll always set up the providers page on load.
+    await setupProveedoresPage();
 });
 
 /**
- * Crea el HTML para una fila de la tabla de proveedores
- * @param {Object} proveedor - El objeto del proveedor
- * @returns {string} - El string HTML de la fila
+ * Sets up the initial state of the providers page.
  */
-function crearFilaProveedorHTML(proveedor) {
-    const tieneContratos = proveedor.contratos && proveedor.contratos.length > 0;
-    const numContratos = tieneContratos ? proveedor.contratos.length : 0;
+async function setupProveedoresPage() {
+    // This function now renders the main provider list view.
+    const mainContent = document.getElementById('main-content');
+    mainContent.innerHTML = `
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h1 class="h4 mb-0">Gestión de Proveedores</h1>
+                        <button class="btn btn-light" id="btnNuevoProveedor">
+                            <i class="bi bi-plus-circle"></i> Nuevo Proveedor
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="filtroNombre" class="form-label">Buscar por nombre:</label>
+                                <input type="text" class="form-control" id="filtroNombre" placeholder="Nombre del proveedor">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filtroConstancia" class="form-label">Constancia:</label>
+                                <select class="form-select" id="filtroConstancia">
+                                    <option value="">Todos</option>
+                                    <option value="true">Con constancia</option>
+                                    <option value="false">Sin constancia</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-outline-secondary" id="btnLimpiarFiltros">
+                                    <i class="bi bi-x-circle"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="alertasContainer"></div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h2 class="h5 mb-0">Lista de Proveedores</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Dirección</th>
+                                        <th>Constancia</th>
+                                        <th>Contratos</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaProveedores">
+                                    <!-- Provider rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 
-    // Determinar estado del proveedor
-    let estado = 'Activo';
-    let estadoClass = 'bg-success';
+    showLoader();
+    await loadAndRenderProviders();
+    setupEventListeners();
+}
 
-    if (tieneContratos) {
-        const hoy = new Date();
-        const contratoVencido = proveedor.contratos.some(c => new Date(c.fechaFin) < hoy);
 
-        if (contratoVencido) {
-            estado = 'Contrato vencido';
-            estadoClass = 'bg-danger';
-        } else {
-            const treintaDias = new Date();
-            treintaDias.setDate(treintaDias.getDate() + 30);
-
-            const contratoPorVencer = proveedor.contratos.some(c => {
-                const fechaFin = new Date(c.fechaFin);
-                return fechaFin > hoy && fechaFin <= treintaDias;
-            });
-
-            if (contratoPorVencer) {
-                estado = 'Por vencer';
-                estadoClass = 'bg-warning text-dark';
-            }
-        }
-    } else {
-        estado = 'Sin contratos';
-        estadoClass = 'bg-secondary';
+/**
+ * Fetches providers from Supabase, caches them, and renders them.
+ */
+async function loadAndRenderProviders() {
+    // If we are not on the main list view, render it first.
+    if (!document.getElementById('tablaProveedores')) {
+        await setupProveedoresPage();
+        return;
     }
+
+    showLoader();
+    allProviders = await getProviders(); // from supabase.js
+    renderProviderTable(allProviders);
+    // displayContractAlerts will be implemented later
+}
+
+/**
+ * Renders an array of providers into the main table.
+ * @param {Array} providers - The array of provider objects to render.
+ */
+function renderProviderTable(providers) {
+    const tablaProveedores = document.getElementById('tablaProveedores');
+    if (!tablaProveedores) {
+        // If the table doesn't exist, it means we are in a different view.
+        // We should render the main view first.
+        setupProveedoresPage().then(() => renderProviderTable(providers));
+        return;
+    }
+
+    if (!providers || providers.length === 0) {
+        tablaProveedores.innerHTML = '<tr><td colspan="6" class="text-center">No hay proveedores registrados.</td></tr>';
+        return;
+    }
+
+    const html = providers.map(provider => createProviderRowHTML(provider)).join('');
+    tablaProveedores.innerHTML = html;
+}
+
+/**
+ * Sets up all necessary event listeners for the page.
+ */
+function setupEventListeners() {
+    // Use event delegation for dynamically added elements if necessary
+    document.getElementById('filtroNombre')?.addEventListener('input', handleFilterChange);
+    document.getElementById('filtroConstancia')?.addEventListener('change', handleFilterChange);
+    document.getElementById('btnLimpiarFiltros')?.addEventListener('click', clearFilters);
+    document.getElementById('btnNuevoProveedor')?.addEventListener('click', openNewProviderModal);
+    document.getElementById('btnGuardarProveedor').addEventListener('click', handleSaveProvider);
+}
+
+/**
+ * Creates the HTML for a single provider row in the table.
+ * @param {Object} provider - The provider object.
+ * @returns {string} - The HTML string for the table row.
+ */
+function createProviderRowHTML(provider) {
+    // This is a placeholder for contract count.
+    const numContracts = 0;
+    const status = { text: 'Activo', className: 'bg-success' }; // Placeholder
 
     return `
         <tr>
-            <td>${proveedor.nombre}</td>
-            <td>${proveedor.direccion || '<span class="text-muted">No registrada</span>'}</td>
+            <td>${provider.name}</td>
+            <td>${provider.address || '<span class="text-muted">No registrada</span>'}</td>
             <td>
-                ${proveedor.tieneConstancia ?
+                ${provider.has_tax_document ?
                     '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Sí</span>' :
                     '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> No</span>'}
             </td>
             <td>
-                ${numContratos > 0 ?
-                    `<a href="detalle-provedor.html?id=${proveedor.id}" class="badge bg-primary text-decoration-none">
-                        <i class="bi bi-file-text"></i> ${numContratos} contrato(s)
-                    </a>` :
-                    '<span class="badge bg-secondary"><i class="bi bi-dash-circle"></i> Sin contratos</span>'}
+                <a href="#" onclick="viewProviderDetails('${provider.id}')" class="badge bg-primary text-decoration-none">
+                    <i class="bi bi-file-text"></i> ${numContracts} contrato(s)
+                </a>
             </td>
-            <td><span class="badge ${estadoClass}">${estado}</span></td>
+            <td><span class="badge ${status.className}">${status.text}</span></td>
             <td>
                 <div class="btn-group btn-group-sm">
-                    <a href="detalle-provedor.html?id=${proveedor.id}" class="btn btn-primary" title="Ver detalles">
+                    <button class="btn btn-primary" onclick="viewProviderDetails('${provider.id}')" title="Ver detalles">
                         <i class="bi bi-eye"></i>
-                    </a>
-                    ${tieneContratos || proveedor.tieneConstancia ?
-                        `<button class="btn btn-info" onclick="verDocumentosProveedor('${proveedor.id}')" title="Ver documentos">
-                            <i class="bi bi-file-earmark-pdf"></i>
-                        </button>` : ''}
-                    <button class="btn btn-warning" onclick="editarProveedor('${proveedor.id}')" title="Editar">
+                    </button>
+                    <button class="btn btn-warning" onclick="openEditProviderModal('${provider.id}')" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-danger" onclick="confirmarEliminarProveedor('${proveedor.id}', '${proveedor.nombre}')" title="Eliminar">
+                    <button class="btn btn-danger" onclick="confirmDeleteProvider('${provider.id}', '${provider.name}')" title="Eliminar">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
@@ -102,296 +182,136 @@ function crearFilaProveedorHTML(proveedor) {
     `;
 }
 
-// Función para cargar lista de proveedores
-function cargarListaProveedores() {
-    const tablaProveedores = document.getElementById('tablaProveedores');
-    if (!tablaProveedores) return;
+/**
+ * Handles changes in the filter inputs and re-renders the table.
+ */
+function handleFilterChange() {
+    const nameFilter = document.getElementById('filtroNombre').value.toLowerCase();
+    const constanciaFilter = document.getElementById('filtroConstancia').value;
 
-    const proveedores = obtenerProveedores();
-
-    if (proveedores.length === 0) {
-        tablaProveedores.innerHTML = '<tr><td colspan="6" class="text-center">No hay proveedores registrados</td></tr>';
-        return;
-    }
-
-    let html = '';
-    proveedores.forEach(function(proveedor) {
-        html += crearFilaProveedorHTML(proveedor);
+    const filteredProviders = allProviders.filter(provider => {
+        const nameMatch = provider.name.toLowerCase().includes(nameFilter);
+        let constanciaMatch = true;
+        if (constanciaFilter !== '') {
+            constanciaMatch = provider.has_tax_document === (constanciaFilter === 'true');
+        }
+        return nameMatch && constanciaMatch;
     });
-    tablaProveedores.innerHTML = html;
+
+    renderProviderTable(filteredProviders);
 }
 
-// Función para filtrar proveedores
-function filtrarProveedores() {
-    const textoBusqueda = document.getElementById('filtroNombre').value.toLowerCase();
-    const filtroConstancia = document.getElementById('filtroConstancia').value;
-    const filtroContrato = document.getElementById('filtroContrato').value;
-
-    let proveedores = obtenerProveedores();
-
-    // Aplicar filtros
-    proveedores = proveedores.filter(function(proveedor) {
-        // Filtro por nombre
-        if (textoBusqueda && !proveedor.nombre.toLowerCase().includes(textoBusqueda)) {
-            return false;
-        }
-
-        // Filtro por constancia
-        if (filtroConstancia !== '') {
-            const tieneConstancia = filtroConstancia === "true";
-
-            if (proveedor.tieneConstancia !== tieneConstancia) {
-                return false;
-            }
-        }
-
-        // Filtro por contrato
-        if (filtroContrato !== '') {
-            const tieneContratos = filtroContrato === "true";
-            const proveedorTieneContratos = proveedor.contratos && proveedor.contratos.length > 0;
-
-            if (proveedorTieneContratos !== tieneContratos) {
-                return false;
-            }
-        }
-
-        return true;
-    });
-
-    // Actualizar tabla con resultados filtrados
-    const tablaProveedores = document.getElementById('tablaProveedores');
-
-    if (proveedores.length === 0) {
-        tablaProveedores.innerHTML = '<tr><td colspan="6" class="text-center">No se encontraron proveedores con los filtros seleccionados</td></tr>';
-        return;
-    }
-
-    let html = '';
-    proveedores.forEach(function(proveedor) {
-        html += crearFilaProveedorHTML(proveedor);
-    });
-    tablaProveedores.innerHTML = html;
-}
-
-// Función para limpiar filtros
-function limpiarFiltros() {
+/**
+ * Clears all filter inputs and re-renders the original list.
+ */
+function clearFilters() {
     document.getElementById('filtroNombre').value = '';
     document.getElementById('filtroConstancia').value = '';
-    document.getElementById('filtroContrato').value = '';
-    cargarListaProveedores();
+    renderProviderTable(allProviders);
 }
 
-// Función para mostrar alertas de contratos por vencer o vencidos
-function mostrarAlertasContratos() {
-    const alertasContainer = document.getElementById('alertasContainer');
-    if (!alertasContainer) return;
-
-    alertasContainer.innerHTML = '';
-
-    const proveedores = obtenerProveedores();
-    const hoy = new Date();
-    const treintaDias = new Date();
-    treintaDias.setDate(treintaDias.getDate() + 30);
-
-    // Verificar si hay contratos vencidos o por vencer
-    const contratosVencidos = [];
-    const contratosPorVencer = [];
-
-    proveedores.forEach(function(proveedor) {
-        if (proveedor.contratos && proveedor.contratos.length > 0) {
-            proveedor.contratos.forEach(function(contrato) {
-                const fechaFin = new Date(contrato.fechaFin);
-
-                if (fechaFin < hoy) {
-                    contratosVencidos.push({
-                        proveedor: proveedor.nombre,
-                        proveedorId: proveedor.id,
-                        contrato: contrato.numero,
-                        fechaFin: fechaFin
-                    });
-                } else if (fechaFin <= treintaDias) {
-                    const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
-                    contratosPorVencer.push({
-                        proveedor: proveedor.nombre,
-                        proveedorId: proveedor.id,
-                        contrato: contrato.numero,
-                        fechaFin: fechaFin,
-                        diasRestantes: diasRestantes
-                    });
-                }
-            });
-        }
-    });
-
-    // Mostrar alertas de contratos vencidos
-    if (contratosVencidos.length > 0) {
-        const alertaVencidos = document.createElement('div');
-        alertaVencidos.className = 'alert alert-danger';
-        alertaVencidos.innerHTML = `
-            <h5><i class="bi bi-exclamation-triangle-fill"></i> Contratos Vencidos (${contratosVencidos.length})</h5>
-            <ul class="mb-0">
-                ${contratosVencidos.map(c => `
-                    <li>
-                        <a href="detalle-provedor.html?id=${c.proveedorId}" class="alert-link">
-                            ${c.proveedor} - Contrato ${c.contrato}
-                        </a>
-                        <span class="text-muted">
-                            (Venció el ${c.fechaFin.toLocaleDateString()})
-                        </span>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
-        alertasContainer.appendChild(alertaVencidos);
-    }
-
-    // Mostrar alertas de contratos por vencer
-    if (contratosPorVencer.length > 0) {
-        const alertaPorVencer = document.createElement('div');
-        alertaPorVencer.className = 'alert alert-warning';
-        alertaPorVencer.innerHTML = `
-            <h5><i class="bi bi-clock-fill"></i> Contratos por Vencer (${contratosPorVencer.length})</h5>
-            <ul class="mb-0">
-                ${contratosPorVencer.map(c => `
-                    <li>
-                        <a href="detalle-provedor.html?id=${c.proveedorId}" class="alert-link">
-                            ${c.proveedor} - Contrato ${c.contrato}
-                        </a>
-                        <span class="text-muted">
-                            (Vence en ${c.diasRestantes} día${c.diasRestantes !== 1 ? 's' : ''}: ${c.fechaFin.toLocaleDateString()})
-                        </span>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
-        alertasContainer.appendChild(alertaPorVencer);
-    }
-}
-
-// Función para editar proveedor
-function editarProveedor(id) {
-    const proveedor = obtenerProveedor(id);
-    if (!proveedor) {
-        mostrarNotificacion('Proveedor no encontrado', 'danger');
-        return;
-    }
-
-    // Llenar el formulario
-    document.getElementById('idProveedor').value = id;
-    document.getElementById('nombreProveedor').value = proveedor.nombre || '';
-    document.getElementById('direccionProveedor').value = proveedor.direccion || '';
-    document.getElementById('tieneConstancia').checked = proveedor.tieneConstancia || false;
-
-    // Mostrar/ocultar sección de constancia
-    document.getElementById('seccionConstancia').style.display =
-        proveedor.tieneConstancia ? 'block' : 'none';
-
-    // Mostrar constancia si existe
-    if (proveedor.tieneConstancia && proveedor.constanciaUrl) {
-        document.getElementById('constanciaPreview').innerHTML = `
-            <div class="alert alert-info">
-                <i class="bi bi-file-earmark-text"></i>
-                <a href="${proveedor.constanciaUrl}" target="_blank">Ver constancia actual</a>
-            </div>
-        `;
-    } else {
-        document.getElementById('constanciaPreview').innerHTML = '';
-    }
-
-    // Actualizar título del modal
-    document.getElementById('tituloModalProveedor').textContent = 'Editar Proveedor';
-
-    // Mostrar el modal
+/**
+ * Opens the modal to create a new provider.
+ */
+function openNewProviderModal() {
+    document.getElementById('formProveedor').reset();
+    document.getElementById('idProveedor').value = '';
+    document.getElementById('tituloModalProveedor').textContent = 'Nuevo Proveedor';
     new bootstrap.Modal(document.getElementById('modalProveedor')).show();
 }
 
-// Función para confirmar eliminación de proveedor
-function confirmarEliminarProveedor(id, nombre) {
-    document.getElementById('nombreProveedorEliminar').textContent = nombre;
-
-    document.getElementById('btnConfirmarEliminar').onclick = function() {
-        eliminarProveedor(id);
-        bootstrap.Modal.getInstance(document.getElementById('modalConfirmacion')).hide();
-    };
-
-    new bootstrap.Modal(document.getElementById('modalConfirmacion')).show();
-}
-
-// Función para guardar proveedor
-function guardarProveedor() {
-    const id = document.getElementById('idProveedor').value;
-    const nombre = document.getElementById('nombreProveedor').value.trim();
-    const direccion = document.getElementById('direccionProveedor').value.trim();
-    const tieneConstancia = document.getElementById('tieneConstancia').checked;
-
-    // Validación básica
-    if (!nombre) {
-        mostrarNotificacion('El nombre del proveedor es obligatorio', 'warning');
+/**
+ * Opens the modal to edit an existing provider.
+ * @param {string} id - The ID of the provider to edit.
+ */
+async function openEditProviderModal(id) {
+    const provider = await getProvider(id);
+    if (!provider) {
+        showNotification('Proveedor no encontrado', 'danger');
         return;
     }
 
-    // Preparar datos del proveedor
-    const proveedor = {
-        id: id || undefined,
-        nombre,
-        direccion,
-        tieneConstancia
-    };
+    document.getElementById('idProveedor').value = provider.id;
+    document.getElementById('nombreProveedor').value = provider.name || '';
+    document.getElementById('direccionProveedor').value = provider.address || '';
+    document.getElementById('tieneConstancia').checked = provider.has_tax_document || false;
 
-    // Si es una edición, mantener datos existentes
+    document.getElementById('tituloModalProveedor').textContent = 'Editar Proveedor';
+    new bootstrap.Modal(document.getElementById('modalProveedor')).show();
+}
+
+/**
+ * Handles the logic for saving a new or existing provider.
+ */
+async function handleSaveProvider() {
+    const id = document.getElementById('idProveedor').value;
+    const name = document.getElementById('nombreProveedor').value.trim();
+    const address = document.getElementById('direccionProveedor').value.trim();
+    const has_tax_document = document.getElementById('tieneConstancia').checked;
+
+    if (!name) {
+        showNotification('El nombre es obligatorio', 'warning');
+        return;
+    }
+
+    const providerData = { name, address, has_tax_document };
     if (id) {
-        const proveedorExistente = obtenerProveedor(id);
-        if (proveedorExistente) {
-            // Mantener constancia si existe
-            if (proveedorExistente.tieneConstancia && proveedorExistente.constanciaUrl) {
-                proveedor.constanciaUrl = proveedorExistente.constanciaUrl;
-            }
-
-            // Mantener contratos si existen
-            if (proveedorExistente.contratos) {
-                proveedor.contratos = proveedorExistente.contratos;
-            }
-
-            // Mantener fecha de registro
-            proveedor.fechaRegistro = proveedorExistente.fechaRegistro;
-        }
-    } else {
-        // Nueva fecha de registro para nuevo proveedor
-        proveedor.fechaRegistro = new Date().toISOString();
+        providerData.id = id;
     }
 
-    // Procesar archivo de constancia si se subió uno
-    const inputConstancia = document.getElementById('archivoConstancia');
-    if (tieneConstancia && inputConstancia && inputConstancia.files.length > 0) {
-        const file = inputConstancia.files[0];
-        // Simular URL para el archivo (en producción, aquí se subiría al servidor)
-        proveedor.constanciaUrl = `../uploads/constancias/${file.name}`;
-    }
+    const savedProvider = await saveProvider(providerData);
 
-    try {
-        // Guardar proveedor en el almacenamiento usando la función del storage.js
-        const proveedorId = guardarProveedor(proveedor);
-
-        // Cerrar el modal
+    if (savedProvider) {
         bootstrap.Modal.getInstance(document.getElementById('modalProveedor')).hide();
-
-        // Mostrar notificación
-        mostrarNotificacion(
-            id ? 'Proveedor actualizado correctamente' : 'Proveedor creado correctamente',
-            'success'
-        );
-
-        // Recargar la lista y las alertas
-        cargarListaProveedores();
-        mostrarAlertasContratos();
-    } catch (error) {
-        console.error('Error al guardar proveedor:', error);
-        mostrarNotificacion('Error al guardar el proveedor', 'danger');
+        showNotification('Proveedor guardado con éxito', 'success');
+        await loadAndRenderProviders();
+    } else {
+        showNotification('Error al guardar el proveedor', 'danger');
     }
 }
 
-// Función para ver documentos de un proveedor específico
-function verDocumentosProveedor(proveedorId) {
-    // Redirigir a ver-documentos.html con filtro del proveedor
-    window.location.href = `ver-documentos.html?proveedor=${proveedorId}`;
+/**
+ * Shows a confirmation dialog before deleting a provider.
+ * @param {string} id - The ID of the provider to delete.
+ * @param {string} name - The name of the provider.
+ */
+function confirmDeleteProvider(id, name) {
+    const modal = new bootstrap.Modal(document.getElementById('modalConfirmacion'));
+    document.getElementById('nombreProveedorEliminar').textContent = name;
+
+    const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+    btnConfirmar.onclick = async () => {
+        const success = await deleteProvider(id);
+        modal.hide();
+        if (success) {
+            showNotification('Proveedor eliminado con éxito', 'success');
+            await loadAndRenderProviders();
+        } else {
+            showNotification('Error al eliminar el proveedor', 'danger');
+        }
+    };
+
+    modal.show();
+}
+
+/**
+ * Fetches and displays the details for a specific provider.
+ * @param {string} id - The ID of the provider to view.
+ */
+async function viewProviderDetails(id) {
+    showLoader();
+    const details = await getProviderDetails(id); // from contratos.js
+
+    if (details) {
+        const { provider, contracts } = details;
+        const viewHtml = getProviderDetailsViewHTML(provider, contracts); // from ui.js
+        renderView(viewHtml); // from ui.js
+
+        const contractContainer = document.getElementById('listaContratos');
+        renderContractList(contracts, contractContainer); // from contratos.js
+    } else {
+        showNotification("No se pudieron cargar los detalles del proveedor.", "danger");
+        // Optionally, render the main list again
+        await loadAndRenderProviders();
+    }
 }
