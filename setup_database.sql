@@ -85,3 +85,6 @@ ALTER TABLE public.evaluaciones ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public Full Access for Documentos" ON public.documentos FOR ALL USING (true) WITH CHECK (true);
 ALTER TABLE public.documentos ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public Full Access for Criterios" ON public.criterios FOR ALL USING (true) WITH CHECK (true);
+ALTER TABLE public.criterios ENABLE ROW LEVEL SECURITY;
