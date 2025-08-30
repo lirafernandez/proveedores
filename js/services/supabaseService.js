@@ -161,6 +161,38 @@ class SupabaseService {
         return data;
     }
 
+    async eliminarDocumento(proveedorId, criterioId) {
+        // Primero, obtenemos el path del documento para poder borrarlo del storage.
+        const { data: docData, error: docError } = await this.supabase
+            .from('documentos')
+            .select('storage_path')
+            .eq('proveedor_id', proveedorId)
+            .eq('tipo', criterioId)
+            .single();
+
+        if (docError) throw new Error(`No se encontró el documento: ${docError.message}`);
+
+        const storagePath = docData.storage_path;
+
+        // Borramos el archivo del storage
+        const { error: storageError } = await this.supabase
+            .storage
+            .from('documentos-proveedores')
+            .remove([storagePath]);
+
+        if (storageError) console.warn(`No se pudo borrar el archivo del storage: ${storageError.message}`); // Usamos warn para no detener el proceso si el archivo ya no existía
+
+        // Borramos el registro de la base de datos
+        const { error: dbError } = await this.supabase
+            .from('documentos')
+            .delete()
+            .eq('proveedor_id', proveedorId)
+            .eq('tipo', criterioId);
+
+        if (dbError) throw new Error(`Error al borrar el registro del documento: ${dbError.message}`);
+    }
+
+
     // === MÉTODOS DE CRITERIOS ===
     async obtenerCriterios() {
         const { data, error } = await this.supabase.from('criterios').select('*');
