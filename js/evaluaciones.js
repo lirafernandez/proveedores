@@ -368,7 +368,8 @@ class EvaluacionManager {
     }
 }
 
-// Initialize the manager directly since the script is at the end of the body.
-if (document.getElementById('formEvaluacion')) {
-    new EvaluacionManager();
-}
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('formEvaluacion')) {
+        new EvaluacionManager();
+    }
+});
