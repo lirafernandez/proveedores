@@ -248,8 +248,11 @@ class EvaluacionManager {
                 showNotification('No se encontró el documento para previsualizar.', 'warning');
                 return;
             }
-            const { data: { signedUrl }, error } = await this.supabase.createSignedUrl(doc.storage_path, 60);
-            if(error) throw error;
+            const result = await this.supabase.createSignedUrl(doc.storage_path, 60);
+            if (!result || !result.signedUrl) {
+                throw new Error('No se pudo generar la URL firmada.');
+            }
+            const signedUrl = result.signedUrl;
             const newWindow = window.open(signedUrl, '_blank');
             if (!newWindow) {
                 showNotification('Por favor, deshabilite el bloqueo de ventanas emergentes.', 'info');

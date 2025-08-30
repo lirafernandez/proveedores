@@ -6,11 +6,12 @@
     <title>ZOOMLION - Evaluación de Proveedores</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="static/css/styles.css">
 </head>
-<body class="bg-light">
+<body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="index.html">
                 <i class="bi bi-building me-2"></i>
@@ -55,7 +56,7 @@
         </header>
 
         <!-- Selección de Proveedor y Tipo -->
-        <div class="card shadow-sm mb-4">
+        <div class="card mb-4">
             <div class="card-body">
                 <h2 class="card-title h4">Iniciar Nueva Evaluación</h2>
                 <div class="row g-3">
@@ -81,13 +82,13 @@
             <div class="row g-4">
                 <!-- Columna de Criterios -->
                 <div class="col-lg-8">
-                    <div id="evaluacionAlta" class="card shadow-sm">
+                    <div id="evaluacionAlta" class="card">
                         <div class="card-body">
                             <h3 class="card-title h5">Criterios de Alta</h3>
                             <div class="criterios-container"></div>
                         </div>
                     </div>
-                    <div id="evaluacionInterna" class="card shadow-sm d-none">
+                    <div id="evaluacionInterna" class="card d-none">
                         <div class="card-body">
                             <h3 class="card-title h5">Criterios de Evaluación Interna</h3>
                             <div class="criterios-container"></div>
@@ -98,7 +99,7 @@
                 <!-- Columna de Resumen -->
                 <div class="col-lg-4">
                     <div class="sticky-top" style="top: 2rem;">
-                        <div class="card shadow-sm">
+                        <div class="card">
                             <div class="card-body text-center">
                                 <h3 class="card-title h5">Resumen</h3>
                                 <p class="text-muted">Puntaje Total</p>

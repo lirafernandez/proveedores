@@ -164,6 +164,7 @@ class ProveedorManager {
         const button = document.createElement('button');
         button.className = `btn btn-sm ${btnClass} mx-1`;
         button.title = title;
+        button.setAttribute('aria-label', title);
         button.innerHTML = `<i class="bi ${icon}"></i>`;
         button.addEventListener('click', (e) => {
             e.stopPropagation();
