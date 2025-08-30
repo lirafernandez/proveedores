@@ -36,11 +36,11 @@ class ProveedorManager {
     }
 
     inicializarEventos() {
-        if(this.btnNuevoProveedor) this.btnNuevoProveedor.addEventListener('click', () => this.mostrarModalProveedor());
-        if(this.btnGuardarProveedor) this.btnGuardarProveedor.addEventListener('click', () => this.guardarProveedor());
-        if(this.searchProveedor) this.searchProveedor.addEventListener('input', () => { this.paginaActual = 1; this.renderizarTabla(); });
-        if(this.filterEstado) this.filterEstado.addEventListener('change', () => { this.paginaActual = 1; this.renderizarTabla(); });
-        if(this.btnConfirmDelete) this.btnConfirmDelete.addEventListener('click', () => this.ejecutarEliminacion());
+        if (this.btnNuevoProveedor) this.btnNuevoProveedor.addEventListener('click', () => this.mostrarModalProveedor());
+        if (this.btnGuardarProveedor) this.btnGuardarProveedor.addEventListener('click', () => this.guardarProveedor());
+        if (this.searchProveedor) this.searchProveedor.addEventListener('input', () => { this.paginaActual = 1; this.renderizarTabla(); });
+        if (this.filterEstado) this.filterEstado.addEventListener('change', () => { this.paginaActual = 1; this.renderizarTabla(); });
+        if (this.btnConfirmDelete) this.btnConfirmDelete.addEventListener('click', () => this.ejecutarEliminacion());
 
         if (this.pagSel) {
             this.pagSel.addEventListener('change', (e) => {
@@ -57,22 +57,8 @@ class ProveedorManager {
 
     async cargarProveedores() {
         try {
-            this.todosLosProveedores = await this.supabase.obtenerProveedores();
-            const evaluaciones = await this.supabase.obtenerEvaluaciones();
-
-            const evaluacionesPorProveedor = evaluaciones.reduce((acc, evaluacion) => {
-                const key = evaluacion.proveedor_id;
-                if (!acc[key]) {
-                    acc[key] = {};
-                }
-                acc[key][evaluacion.tipo_evaluacion] = evaluacion;
-                return acc;
-            }, {});
-
-            this.todosLosProveedores.forEach(p => {
-                p.evaluaciones = evaluacionesPorProveedor[p.id] || {};
-            });
-
+            const { data } = await this.supabase.obtenerProveedores({ porPagina: 0 }); // Obtener todos
+            this.todosLosProveedores = data;
             this.renderizarTabla();
         } catch (error) {
             console.error('Error al cargar proveedores:', error);
@@ -81,7 +67,7 @@ class ProveedorManager {
     }
 
     renderizarTabla() {
-        if(!this.proveedoresTableBody) return;
+        if (!this.proveedoresTableBody) return;
         const busqueda = this.searchProveedor.value.toLowerCase();
         const estadoFiltro = this.filterEstado.value;
 
@@ -89,81 +75,71 @@ class ProveedorManager {
             const busquedaCoincide = p.nombre.toLowerCase().includes(busqueda) || (p.rfc && p.rfc.toLowerCase().includes(busqueda));
             if (!estadoFiltro) return busquedaCoincide;
 
-            const estadoProveedor = this.determinarEstado(p.evaluaciones.ALTA?.puntaje || 0, p.evaluaciones.INTERNA?.puntaje || 0);
+            const estadoProveedor = this.determinarEstado(
+                p.evaluaciones?.ALTA?.puntaje || 0,
+                p.evaluaciones?.INTERNA?.puntaje || 0
+            );
             return busquedaCoincide && estadoProveedor.toLowerCase() === estadoFiltro;
         });
 
         const total = proveedoresFiltrados.length;
         this.totalPaginas = this.proveedoresPorPagina > 0 ? Math.ceil(total / this.proveedoresPorPagina) : 1;
-        const proveedoresPaginados = this.proveedoresPorPagina > 0 
+        const proveedoresPaginados = this.proveedoresPorPagina > 0
             ? proveedoresFiltrados.slice((this.paginaActual - 1) * this.proveedoresPorPagina, this.paginaActual * this.proveedoresPorPagina)
             : proveedoresFiltrados;
 
         this.proveedoresTableBody.innerHTML = '';
-        proveedoresPaginados.forEach(proveedor => {
-            const row = this.crearFilaProveedor(proveedor, proveedor.evaluaciones);
-            this.proveedoresTableBody.appendChild(row);
-        });
+        if (proveedoresPaginados.length === 0) {
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 5;
+            td.className = 'text-center text-muted py-5';
+            td.textContent = 'No se encontraron proveedores.';
+            tr.appendChild(td);
+            this.proveedoresTableBody.appendChild(tr);
+        } else {
+            proveedoresPaginados.forEach(proveedor => {
+                const row = this.crearFilaProveedor(proveedor, proveedor.evaluaciones);
+                this.proveedoresTableBody.appendChild(row);
+            });
+        }
 
         this.renderizarPaginacion(total);
     }
 
     renderizarPaginacion() {
-        if(!this.paginacionContainer) return;
         this.paginacionContainer.innerHTML = '';
-        if (this.totalPaginas <= 1) return;
-
-        const nav = document.createElement('nav');
-        const ul = document.createElement('ul');
-        ul.className = 'pagination justify-content-center';
-
         for (let i = 1; i <= this.totalPaginas; i++) {
-            const li = document.createElement('li');
-            li.className = `page-item${i === this.paginaActual ? ' active' : ''}`;
-            const a = document.createElement('a');
-            a.className = 'page-link';
-            a.href = '#';
-            a.textContent = i;
-            a.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.irPagina(i);
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = `btn btn-sm ${i === this.paginaActual ? 'btn-primary' : 'btn-outline-primary'} me-1`;
+            btn.addEventListener('click', () => {
+                this.paginaActual = i;
+                this.renderizarTabla();
             });
-            li.appendChild(a);
-            ul.appendChild(li);
+            this.paginacionContainer.appendChild(btn);
         }
-        nav.appendChild(ul);
-        this.paginacionContainer.appendChild(nav);
-    }
-
-    irPagina(num) {
-        this.paginaActual = num;
-        this.renderizarTabla();
     }
 
     crearFilaProveedor(proveedor, evaluaciones) {
         const tr = document.createElement('tr');
-        const evalAlta = evaluaciones.ALTA || null;
-        const evalInterna = evaluaciones.INTERNA || null;
-        const estado = this.determinarEstado(evalAlta?.puntaje || 0, evalInterna?.puntaje || 0);
+        const estado = this.determinarEstado(
+            evaluaciones?.ALTA?.puntaje || 0,
+            evaluaciones?.INTERNA?.puntaje || 0
+        );
 
         tr.innerHTML = `
             <td>${proveedor.nombre}</td>
-            <td>${proveedor.rfc}</td>
-            <td>${new Date(proveedor.fecha_alta).toLocaleDateString()}</td>
-            <td>
-                <span class="badge ${this.getEstadoBadgeClass(estado)}">${estado}</span>
-            </td>
+            <td>${proveedor.rfc || ''}</td>
+            <td>${proveedor.fecha_alta ? new Date(proveedor.fecha_alta).toLocaleDateString() : ''}</td>
+            <td><span class="badge ${this.getEstadoBadgeClass(estado)}">${estado}</span></td>
+            <td class="text-end"></td>
         `;
 
-        const actionsTd = document.createElement('td');
-        actionsTd.className = 'text-end';
-
-        const editBtn = this._createActionButton('Editar Proveedor', 'bi-pencil', 'btn-outline-info', () => this.editarProveedor(proveedor.id));
-        const evalBtn = this._createActionButton('Evaluar Proveedor', 'bi-clipboard-check', 'btn-outline-primary', () => this.irAEvaluacion(proveedor.id));
-        const deleteBtn = this._createActionButton('Eliminar Proveedor', 'bi-trash', 'btn-outline-danger', () => this.eliminarProveedor(proveedor.id));
-
-        actionsTd.append(editBtn, evalBtn, deleteBtn);
-        tr.appendChild(actionsTd);
+        const accionesTd = tr.querySelector('td:last-child');
+        accionesTd.appendChild(this._createActionButton('Editar', 'bi-pencil', 'btn-primary', () => this.editarProveedor(proveedor.id)));
+        accionesTd.appendChild(this._createActionButton('Eliminar', 'bi-trash', 'btn-danger', () => this.eliminarProveedor(proveedor.id)));
+        accionesTd.appendChild(this._createActionButton('Evaluar', 'bi-clipboard-check', 'btn-info', () => this.irAEvaluacion(proveedor.id)));
 
         return tr;
     }
@@ -189,7 +165,7 @@ class ProveedorManager {
             showNotification('Proveedor eliminado con éxito.', 'success');
             this.proveedorAEliminar = null;
             this.confirmDeleteModal.hide();
-            this.cargarProveedores(); // Recargar la lista
+            this.cargarProveedores();
         } catch (error) {
             console.error('Error al eliminar proveedor:', error);
             showNotification('Error al eliminar el proveedor.', 'error');
@@ -220,59 +196,4 @@ class ProveedorManager {
             return;
         }
 
-        const formData = new FormData(form);
-        const proveedorData = Object.fromEntries(formData.entries());
-
-        if (this.proveedorSeleccionado) {
-            proveedorData.id = this.proveedorSeleccionado.id;
-        } else {
-            proveedorData.fecha_alta = new Date().toISOString();
-        }
-
-        try {
-            await this.supabase.guardarProveedor(proveedorData);
-            this.modal.hide();
-            showNotification('Proveedor guardado con éxito.', 'success');
-            this.cargarProveedores(); // Recargar la lista
-        } catch (error) {
-            console.error('Error al guardar proveedor:', error);
-            showNotification('Error al guardar el proveedor.', 'error');
-        }
-    }
-
-    async editarProveedor(id) {
-        try {
-            const proveedor = await this.supabase.obtenerProveedorPorId(id);
-            if (proveedor) {
-                this.mostrarModalProveedor(proveedor);
-            }
-        } catch (error) {
-            console.error('Error al cargar proveedor para editar:', error);
-            showNotification('Error al cargar el proveedor para editar.', 'error');
-        }
-    }
-
-    determinarEstado(evalAlta, evalInterna) {
-        if (!evalAlta && !evalInterna) return 'Pendiente';
-        if (evalAlta >= 70 && evalInterna >= 70) return 'Aprobado';
-        if (evalAlta < 70 || evalInterna < 70) return 'Rechazado';
-        return 'En Proceso';
-    }
-
-    getEstadoBadgeClass(estado) {
-        switch (estado) {
-            case 'Aprobado': return 'bg-success';
-            case 'Rechazado': return 'bg-danger';
-            case 'En Proceso': return 'bg-warning';
-            default: return 'bg-secondary';
-        }
-    }
-
-    irAEvaluacion(id) {
-        window.location.href = `evaluaciones.html?proveedor=${id}`;
-    }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    new ProveedorManager();
-});
+        const

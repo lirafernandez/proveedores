@@ -11,15 +11,32 @@ class EvaluacionManager {
         this.tipoEvaluacionActual = 'ALTA';
         this.autoSaveTimeout = null;
 
+        this.cacheDOM();
         this.inicializarEventos();
         this.cargarProveedores();
     }
 
+    cacheDOM() {
+        this.selectProveedor = document.getElementById('selectProveedor');
+        this.tipoEvaluacion = document.getElementById('tipoEvaluacion');
+        this.btnGuardarEvaluacion = document.getElementById('btnGuardarEvaluacion');
+        this.comentariosEvaluacion = document.getElementById('comentariosEvaluacion');
+        this.formEvaluacion = document.getElementById('formEvaluacion');
+        this.puntajeTotal = document.getElementById('puntajeTotal');
+        this.btnBorrarTodos = document.getElementById('btnBorrarTodosEvaluaciones');
+
+        this.confirmDeleteAllModalElement = document.getElementById('confirmDeleteAllModal');
+        this.confirmDeleteAllModal = new bootstrap.Modal(this.confirmDeleteAllModalElement);
+        this.btnConfirmDeleteAll = document.getElementById('btnConfirmDeleteAll');
+    }
+
     inicializarEventos() {
-        document.getElementById('selectProveedor').addEventListener('change', (e) => this.cambiarProveedor(e.target.value));
-        document.getElementById('tipoEvaluacion').addEventListener('change', (e) => this.cambiarTipoEvaluacion(e.target.value));
-        document.getElementById('btnGuardarEvaluacion').addEventListener('click', () => this.guardarEvaluacion(true));
-        document.getElementById('comentariosEvaluacion').addEventListener('input', () => this.debouncedAutoSave());
+        this.selectProveedor.addEventListener('change', (e) => this.cambiarProveedor(e.target.value));
+        this.tipoEvaluacion.addEventListener('change', (e) => this.cambiarTipoEvaluacion(e.target.value));
+        this.btnGuardarEvaluacion.addEventListener('click', () => this.guardarEvaluacion(true));
+        this.comentariosEvaluacion.addEventListener('input', () => this.debouncedAutoSave());
+        this.btnBorrarTodos.addEventListener('click', () => this.confirmDeleteAllModal.show());
+        this.btnConfirmDeleteAll.addEventListener('click', () => this.borrarTodasLasEvaluaciones());
     }
 
     async cargarProveedores() {
@@ -249,6 +266,18 @@ class EvaluacionManager {
             if (mostrarNotificacion) {
                 showNotification(`Error al guardar la evaluación: ${error.message}`, 'error');
             }
+        }
+    }
+
+    async borrarTodasLasEvaluaciones() {
+        try {
+            await this.supabase.borrarTodasEvaluaciones();
+            showNotification('Todas las evaluaciones han sido borradas.', 'success');
+            this.confirmDeleteAllModal.hide();
+            this.cargarProveedores(); // Recargar para refrescar la vista
+        } catch (error) {
+            console.error('Error al borrar todas las evaluaciones:', error);
+            showNotification('Error al borrar las evaluaciones.', 'error');
         }
     }
 }
