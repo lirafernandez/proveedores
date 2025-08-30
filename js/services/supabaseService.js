@@ -122,10 +122,31 @@ class SupabaseService {
     async obtenerDocumento(proveedorId, tipo) {
         const { data, error } = await this.supabase
             .from('documentos')
-            .select('nombre_archivo, contenido')
+            .select('nombre_archivo, storage_path')
             .eq('proveedor_id', proveedorId)
             .eq('tipo', tipo)
             .single();
+        if (error) throw error;
+        return data;
+    }
+
+    async uploadFile(file, filePath) {
+        const { data, error } = await this.supabase
+            .storage
+            .from('documentos-proveedores')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: true
+            });
+        if (error) throw error;
+        return data;
+    }
+
+    async createSignedUrl(filePath) {
+        const { data, error } = await this.supabase
+            .storage
+            .from('documentos-proveedores')
+            .createSignedUrl(filePath, 60); // URL válida por 60 segundos
         if (error) throw error;
         return data;
     }
