@@ -3,7 +3,11 @@ import { showNotification } from './ui/notifications.js';
 
 class EvaluacionManager {
     constructor() {
+
         this.supabase = supabaseService; // Corrected Supabase service instantiation
+
+        this.supabase = supabaseService;
+
         this.proveedorActual = null;
         this.evaluacionActual = null;
         this.tipoEvaluacionActual = 'ALTA';
