@@ -113,10 +113,21 @@ class SupabaseService {
     async obtenerDocumentosPorProveedor(proveedorId) {
         const { data, error } = await this.supabase
             .from('documentos')
-            .select('tipo')
+            .select('tipo, nombre_archivo')
             .eq('proveedor_id', proveedorId);
         if (error) throw error;
         return data || [];
+    }
+
+    async obtenerDocumento(proveedorId, tipo) {
+        const { data, error } = await this.supabase
+            .from('documentos')
+            .select('nombre_archivo, contenido')
+            .eq('proveedor_id', proveedorId)
+            .eq('tipo', tipo)
+            .single();
+        if (error) throw error;
+        return data;
     }
 
     async guardarDocumento(documentoData) {
@@ -127,6 +138,30 @@ class SupabaseService {
             .single();
         if (error) throw error;
         return data;
+    }
+
+    // === MÉTODOS DE CRITERIOS ===
+    async obtenerCriterios() {
+        const { data, error } = await this.supabase.from('criterios').select('*');
+        if (error) throw error;
+        return data;
+    }
+
+    async agregarCriterio(criterio) {
+        const { data, error } = await this.supabase.from('criterios').insert(criterio).select();
+        if (error) throw error;
+        return data[0];
+    }
+
+    async actualizarCriterio(id, criterio) {
+        const { data, error } = await this.supabase.from('criterios').update(criterio).eq('id', id).select();
+        if (error) throw error;
+        return data[0];
+    }
+
+    async eliminarCriterio(id) {
+        const { error } = await this.supabase.from('criterios').delete().eq('id', id);
+        if (error) throw error;
     }
 
     // === MÉTODOS DE TIEMPO REAL ===
