@@ -106,6 +106,7 @@ class ProveedorManager {
             const busquedaCoincide = p.nombre.toLowerCase().includes(busqueda) || (p.rfc && p.rfc.toLowerCase().includes(busqueda));
             if (!estadoFiltro) return busquedaCoincide;
             const estadoProveedor = this.determinarEstado(p.evaluaciones?.ALTA, p.evaluaciones?.INTERNA);
+            const estadoProveedor = this.determinarEstado(p.evaluaciones?.ALTA?.puntaje || 0, p.evaluaciones?.INTERNA?.puntaje || 0);
             return busquedaCoincide && estadoProveedor.toLowerCase() === estadoFiltro;
         });
 
@@ -150,6 +151,9 @@ class ProveedorManager {
         tr.className = 'hover:bg-gray-50 transition-colors';
 
         const estado = this.determinarEstado(proveedor.evaluaciones?.ALTA, proveedor.evaluaciones?.INTERNA);
+=======
+        const estado = this.determinarEstado(proveedor.evaluaciones?.ALTA?.puntaje || 0, proveedor.evaluaciones?.INTERNA?.puntaje || 0);
+ 
         const badgeClass = this.getEstadoBadgeClass(estado);
 
         tr.innerHTML = `
@@ -253,7 +257,6 @@ class ProveedorManager {
             showNotification('Error al guardar el proveedor.', 'error');
         }
     }
-
     determinarEstado(evaluacionAlta, evaluacionInterna) {
         let puntajeFinal;
 
@@ -275,6 +278,11 @@ class ProveedorManager {
         if (puntajeFinal >= 60) return 'CONDICIONADO';
         // Si tiene una evaluación (alta o interna) y no llega a 60, es rechazado.
         return 'RECHAZADO';
+    determinarEstado(puntajeAlta = 0, puntajeInterna = 0) {
+        if (puntajeAlta > 80) return 'APROBADO';
+        if (puntajeAlta >= 60) return 'CONDICIONADO';
+        if (puntajeAlta > 0 && puntajeAlta < 60) return 'RECHAZADO';
+        return 'PENDIENTE';
     }
 
     getEstadoBadgeClass(estado) {

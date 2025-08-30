@@ -372,3 +372,9 @@ class EvaluacionManager {
 if (document.getElementById('formEvaluacion')) {
     new EvaluacionManager();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('formEvaluacion')) {
+        new EvaluacionManager();
+    }
+});

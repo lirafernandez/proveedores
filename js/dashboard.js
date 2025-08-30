@@ -48,6 +48,11 @@ class DashboardManager {
         if (puntajeFinal > 80) return 'APROBADO';
         if (puntajeFinal >= 60) return 'CONDICIONADO';
         return 'RECHAZADO';
+    determinarEstado(puntajeAlta = 0) {
+        if (puntajeAlta > 80) return 'APROBADO';
+        if (puntajeAlta >= 60) return 'CONDICIONADO';
+        if (puntajeAlta > 0 && puntajeAlta < 60) return 'RECHAZADO';
+        return 'PENDIENTE';
     }
 
     renderSupplierStatusChart(suppliers) {
@@ -63,6 +68,8 @@ class DashboardManager {
 
         suppliers.forEach(supplier => {
             const status = this.determinarEstado(supplier.evaluaciones?.ALTA, supplier.evaluaciones?.INTERNA);
+            const puntajeAlta = supplier.evaluaciones?.ALTA?.puntaje || 0;
+            const status = this.determinarEstado(puntajeAlta);
             if (statusCounts.hasOwnProperty(status)) {
                 statusCounts[status]++;
             }
