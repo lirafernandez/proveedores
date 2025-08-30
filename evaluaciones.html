@@ -37,40 +37,36 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <div class="row mb-4">
-            <div class="col">
-                <h1>Evaluación de Proveedores</h1>
-            </div>
-            <div class="col text-end">
-                <button class="btn btn-danger" id="btnBorrarTodosEvaluaciones" title="Borrar todos los proveedores y evaluaciones">
-                    <i class="bi bi-trash"></i> Borrar Todos
-                </button>
-            </div>
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Evaluación de Proveedores</h1>
+            <button class="btn btn-danger" id="btnBorrarTodosEvaluaciones" title="Borrar todas las evaluaciones">
+                <i class="bi bi-trash me-2"></i> Borrar Evaluaciones
+            </button>
         </div>
+
         <!-- Tabla resumen de evaluaciones -->
         <div id="tablaResumenEvaluaciones" class="mb-4"></div>
 
-        <!-- Selector de Proveedor -->
+        <!-- Selección -->
         <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="bi bi-check2-square me-2"></i>Iniciar Nueva Evaluación</h5>
+            </div>
             <div class="card-body">
-                <div class="row">
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="selectProveedor" class="form-label">Seleccionar Proveedor</label>
-                            <select class="form-select" id="selectProveedor" aria-label="Seleccionar proveedor">
-                                <option value="" selected>Seleccione un proveedor...</option>
-                            </select>
-                        </div>
+                        <label for="selectProveedor" class="form-label">Proveedor</label>
+                        <select class="form-select" id="selectProveedor" aria-label="Seleccionar proveedor">
+                            <option value="" selected>Seleccione un proveedor...</option>
+                        </select>
                     </div>
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="tipoEvaluacion" class="form-label">Tipo de Evaluación</label>
-                            <select class="form-select" id="tipoEvaluacion" aria-label="Seleccionar tipo de evaluación">
-                                <option value="ALTA">Evaluación de Alta</option>
-                                <option value="INTERNA">Evaluación Interna</option>
-                            </select>
-                        </div>
+                        <label for="tipoEvaluacion" class="form-label">Tipo de Evaluación</label>
+                        <select class="form-select" id="tipoEvaluacion" aria-label="Seleccionar tipo de evaluación">
+                            <option value="ALTA">Evaluación de Alta</option>
+                            <option value="INTERNA">Evaluación Interna</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -78,73 +74,72 @@
 
         <!-- Formulario de Evaluación -->
         <div id="formEvaluacion" class="hidden">
-
-            <!-- Evaluación de Alta (criterios generados dinámicamente) -->
-            <div id="evaluacionAlta" class="card mb-4">
-                <div class="card-header">
-                    <h4>Criterios de Alta</h4>
-                </div>
-                <div class="card-body">
-                    <!-- Se generará dinámicamente desde JavaScript -->
-                </div>
-            </div>
-
-            <!-- Evaluación Interna -->
-            <div id="evaluacionInterna" class="card mb-4 hidden">
-                <div class="card-header">
-                    <h4>Criterios de Evaluación Interna</h4>
-                </div>
-                <div class="card-body">
-                    <!-- Se generará dinámicamente desde JavaScript -->
-                </div>
-            </div>
-
-            <!-- Resultado y Comentarios -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h4>Puntaje Total: <span id="puntajeTotal">0</span>%</h4>
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Criterios -->
+                    <div id="evaluacionAlta" class="card mb-4">
+                        <div class="card-header">
+                            <h4>Criterios de Alta</h4>
+                        </div>
+                        <div class="card-body">
+                            <!-- Se generará dinámicamente -->
                         </div>
                     </div>
-                    
-                    <!-- Sección de Comentarios -->
-                    <div class="row">
-                        <div class="col-12">
-                            <h5 class="mb-3">
-                                <i class="fas fa-comment-alt text-info"></i> 
-                                Comentarios y Justificaciones
-                            </h5>
-                            <div class="form-group">
-                                <label for="comentariosEvaluacion" class="form-label">
-                                    <i class="fas fa-edit me-1"></i>
-                                    Agregar comentarios sobre criterios no cumplidos o justificaciones:
-                                </label>
-                                <textarea class="form-control comentarios-textarea" 
-                                          id="comentariosEvaluacion" 
-                                          rows="4" 
-                                          placeholder="Ej: El proveedor no cumple con la carta de opinión positiva debido a... / Se requiere actualización de documentos por..."></textarea>
-                                <div class="form-text">
-                                    <i class="fas fa-info-circle text-muted"></i>
-                                    Utiliza este espacio para documentar por qué un proveedor no cumple ciertos criterios, acciones requeridas, o cualquier observación relevante.
-                                </div>
+                    <div id="evaluacionInterna" class="card mb-4 hidden">
+                        <div class="card-header">
+                            <h4>Criterios de Evaluación Interna</h4>
+                        </div>
+                        <div class="card-body">
+                            <!-- Se generará dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <!-- Resumen y Acciones -->
+                    <div class="card sticky-top" style="top: 20px;">
+                        <div class="card-header">
+                            <h5><i class="bi bi-calculator me-2"></i>Resumen</h5>
+                        </div>
+                        <div class="card-body">
+                            <h4 class="text-center mb-3">Puntaje Total</h4>
+                            <h1 class="display-4 text-center fw-bold" id="puntajeTotal">0%</h1>
+                            <hr>
+                            <div class="mb-3">
+                                <label for="comentariosEvaluacion" class="form-label fw-bold">Comentarios</label>
+                                <textarea class="form-control" id="comentariosEvaluacion" rows="5" placeholder="Añadir observaciones..."></textarea>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-primary" id="btnGuardarEvaluacion">
+                                    <i class="fas fa-save me-2"></i>Guardar Evaluación
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="btnCancelar">
+                                    <i class="fas fa-times me-2"></i>Cancelar
+                                </button>
                             </div>
                         </div>
                     </div>
-                    
-                    <hr class="my-4">
-                    
-                    <!-- Botones -->
-                    <div class="row">
-                        <div class="col-12 text-end">
-                            <button type="button" class="btn btn-secondary me-2" id="btnCancelar">
-                                <i class="fas fa-times me-1"></i>Cancelar
-                            </button>
-                            <button type="button" class="btn btn-primary" id="btnGuardarEvaluacion">
-                                <i class="fas fa-save me-1"></i>Guardar Evaluación
-                            </button>
-                        </div>
-                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="notification-container"></div>
+
+    <!-- Modal de Confirmación de Eliminación Total -->
+    <div class="modal fade" id="confirmDeleteAllModal" tabindex="-1" aria-labelledby="confirmDeleteAllModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteAllModalLabel">Confirmar Eliminación Total</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que quieres borrar <strong>TODAS</strong> las evaluaciones?</p>
+                    <p class="text-danger"><strong>¡Esta acción no se puede deshacer!</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmDeleteAll">Sí, Borrar Todo</button>
                 </div>
             </div>
         </div>

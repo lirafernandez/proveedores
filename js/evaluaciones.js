@@ -1,6 +1,7 @@
 import { SupabaseService } from './services/supabaseService.js';
 import { fileToBase64 } from './modules/fileUtils.js';
 import { CRITERIOS_EVALUACION } from './constants.js';
+import { showNotification } from './ui/notifications.js';
 
 class EvaluacionManager {
     constructor() {
@@ -10,15 +11,32 @@ class EvaluacionManager {
         this.tipoEvaluacionActual = 'ALTA';
         this.autoSaveTimeout = null;
 
+        this.cacheDOM();
         this.inicializarEventos();
         this.cargarProveedores();
     }
 
+    cacheDOM() {
+        this.selectProveedor = document.getElementById('selectProveedor');
+        this.tipoEvaluacion = document.getElementById('tipoEvaluacion');
+        this.btnGuardarEvaluacion = document.getElementById('btnGuardarEvaluacion');
+        this.comentariosEvaluacion = document.getElementById('comentariosEvaluacion');
+        this.formEvaluacion = document.getElementById('formEvaluacion');
+        this.puntajeTotal = document.getElementById('puntajeTotal');
+        this.btnBorrarTodos = document.getElementById('btnBorrarTodosEvaluaciones');
+
+        this.confirmDeleteAllModalElement = document.getElementById('confirmDeleteAllModal');
+        this.confirmDeleteAllModal = new bootstrap.Modal(this.confirmDeleteAllModalElement);
+        this.btnConfirmDeleteAll = document.getElementById('btnConfirmDeleteAll');
+    }
+
     inicializarEventos() {
-        document.getElementById('selectProveedor').addEventListener('change', (e) => this.cambiarProveedor(e.target.value));
-        document.getElementById('tipoEvaluacion').addEventListener('change', (e) => this.cambiarTipoEvaluacion(e.target.value));
-        document.getElementById('btnGuardarEvaluacion').addEventListener('click', () => this.guardarEvaluacion(true));
-        document.getElementById('comentariosEvaluacion').addEventListener('input', () => this.debouncedAutoSave());
+        this.selectProveedor.addEventListener('change', (e) => this.cambiarProveedor(e.target.value));
+        this.tipoEvaluacion.addEventListener('change', (e) => this.cambiarTipoEvaluacion(e.target.value));
+        this.btnGuardarEvaluacion.addEventListener('click', () => this.guardarEvaluacion(true));
+        this.comentariosEvaluacion.addEventListener('input', () => this.debouncedAutoSave());
+        this.btnBorrarTodos.addEventListener('click', () => this.confirmDeleteAllModal.show());
+        this.btnConfirmDeleteAll.addEventListener('click', () => this.borrarTodasLasEvaluaciones());
     }
 
     async cargarProveedores() {
@@ -66,33 +84,47 @@ class EvaluacionManager {
 
     generarCriterios() {
         const container = document.querySelector(`#evaluacion${this.tipoEvaluacionActual === 'ALTA' ? 'Alta' : 'Interna'} .card-body`);
+        container.innerHTML = ''; // Limpiar contenedor
         const criterios = CRITERIOS_EVALUACION[this.tipoEvaluacionActual];
-        let html = '';
-        for (const [key, criterio] of Object.entries(criterios)) {
-            html += `
-                <div class="mb-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="${key}" data-ponderacion="${criterio.ponderacion}">
-                        <label class="form-check-label" for="${key}">${criterio.nombre} (${criterio.ponderacion}%)</label>
-                    </div>
-                    <div class="mt-2">
-                        <input type="file" class="form-control" id="${key}File" name="${key}File">
-                        <div class="file-status-container"></div>
-                    </div>
-                </div>
-            `;
-        }
-        container.innerHTML = html;
-        this.reasignarListenersCriterios();
-    }
 
-    reasignarListenersCriterios() {
-        document.querySelectorAll('#formEvaluacion .form-check-input').forEach(checkbox => {
+        for (const [key, criterio] of Object.entries(criterios)) {
+            const formGroup = document.createElement('div');
+            formGroup.className = 'mb-3';
+
+            const formCheck = document.createElement('div');
+            formCheck.className = 'form-check';
+
+            const checkbox = document.createElement('input');
+            checkbox.className = 'form-check-input';
+            checkbox.type = 'checkbox';
+            checkbox.id = key;
+            checkbox.dataset.ponderacion = criterio.ponderacion;
             checkbox.addEventListener('change', () => this.actualizarPuntaje());
-        });
-        document.querySelectorAll('#formEvaluacion input[type="file"]').forEach(input => {
-            input.addEventListener('change', (e) => this.manejarArchivo(e));
-        });
+
+            const label = document.createElement('label');
+            label.className = 'form-check-label';
+            label.htmlFor = key;
+            label.textContent = `${criterio.nombre} (${criterio.ponderacion}%)`;
+
+            formCheck.append(checkbox, label);
+
+            const fileInputContainer = document.createElement('div');
+            fileInputContainer.className = 'mt-2';
+
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.className = 'form-control';
+            fileInput.id = `${key}File`;
+            fileInput.name = `${key}File`;
+            fileInput.addEventListener('change', (e) => this.manejarArchivo(e));
+
+            const fileStatus = document.createElement('div');
+            fileStatus.className = 'file-status-container';
+
+            fileInputContainer.append(fileInput, fileStatus);
+            formGroup.append(formCheck, fileInputContainer);
+            container.appendChild(formGroup);
+        }
     }
 
     limpiarFormulario() {
@@ -227,15 +259,29 @@ class EvaluacionManager {
             this.evaluacionActual = savedData;
 
             if (mostrarNotificacion) {
-                alert('Evaluación guardada correctamente');
+                showNotification('Evaluación guardada correctamente', 'success');
             }
         } catch (error) {
             console.error('Error al guardar la evaluación:', error);
             if (mostrarNotificacion) {
-                alert('Error al guardar la evaluación: ' + error.message);
+                showNotification(`Error al guardar la evaluación: ${error.message}`, 'error');
             }
+        }
+    }
+
+    async borrarTodasLasEvaluaciones() {
+        try {
+            await this.supabase.borrarTodasEvaluaciones();
+            showNotification('Todas las evaluaciones han sido borradas.', 'success');
+            this.confirmDeleteAllModal.hide();
+            this.cargarProveedores(); // Recargar para refrescar la vista
+        } catch (error) {
+            console.error('Error al borrar todas las evaluaciones:', error);
+            showNotification('Error al borrar las evaluaciones.', 'error');
         }
     }
 }
 
-new EvaluacionManager();
+document.addEventListener('DOMContentLoaded', () => {
+    new EvaluacionManager();
+});
