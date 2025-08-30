@@ -4,113 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Analíticas - ZOOMLION</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans">
+<body class="bg-light">
 
     <!-- Navbar -->
-    <nav class="bg-gray-800 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
-                <div class="flex-shrink-0 flex items-center">
-                    <a href="index.html" class="text-white text-2xl font-bold flex items-center"><i class="bi bi-building mr-2"></i><span>ZOOMLION</span></a>
-                </div>
-                <div class="hidden md:flex md:items-center md:space-x-4">
-                    <a href="index.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Inicio</a>
-                    <a href="proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Proveedores</a>
-                    <a href="evaluaciones.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Evaluaciones</a>
-                    <a href="dashboard.html" class="text-white bg-gray-900 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
-                    <a href="importar_proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Importar</a>
-                    <a href="configuracion.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Configuración</a>
-                </div>
-                <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-button" class="text-gray-400 hover:text-white focus:outline-none focus:text-white"><i class="bi bi-list text-2xl"></i></button>
-                </div>
-            </div>
-        </div>
-        <div id="mobile-menu" class="md:hidden hidden">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="index.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Inicio</a>
-                <a href="proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Proveedores</a>
-                <a href="evaluaciones.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Evaluaciones</a>
-                <a href="dashboard.html" class="text-white bg-gray-900 block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
-                <a href="importar_proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Importar</a>
-                <a href="configuracion.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Configuración</a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <i class="bi bi-building me-2"></i>
+                ZOOMLION
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="proveedores.html">Proveedores</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="evaluaciones.html">Evaluaciones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="importar_proveedores.html">Importar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="configuracion.html">Configuración</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
-<!-- Navbar -->
-<nav class="bg-gray-800 shadow-lg">
-  <div class="max-w-7xl mx-auto px-4">
-    <div class="flex justify-between h-16">
-      <div class="flex-shrink-0 flex items-center">
-        <a href="index.html" class="text-white text-2xl font-bold flex items-center">
-          <i class="bi bi-building mr-2"></i><span>ZOOMLION</span>
-        </a>
-      </div>
-      <div class="hidden md:flex md:items-center md:space-x-4">
-        <a href="index.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Inicio</a>
-        <a href="proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Proveedores</a>
-        <a href="evaluaciones.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Evaluaciones</a>
-        <a href="dashboard.html" class="text-white bg-gray-900 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
-        <a href="importar_proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Importar</a>
-        <a href="configuracion.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Configuración</a>
-      </div>
-      <div class="md:hidden flex items-center">
-        <button id="mobile-menu-button" class="text-gray-400 hover:text-white focus:outline-none focus:text-white">
-          <i class="bi bi-list text-2xl"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-  <div id="mobile-menu" class="md:hidden hidden">
-    <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-      <a href="index.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Inicio</a>
-      <a href="proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Proveedores</a>
-      <a href="evaluaciones.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Evaluaciones</a>
-      <a href="dashboard.html" class="text-white bg-gray-900 block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
-      <a href="importar_proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Importar</a>
-      <a href="configuracion.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Configuración</a>
-    </div>
-  </div>
-</nav>
-
 
     <!-- Contenido Principal -->
-    <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <header class="mb-10 text-center">
-            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">Dashboard de Analíticas</h1>
-            <p class="mt-4 text-xl text-gray-600">Visualiza el rendimiento y cumplimiento de tus proveedores.</p>
+    <main class="container py-5">
+        <header class="text-center mb-5">
+            <h1 class="display-4 fw-bold">Dashboard de Analíticas</h1>
+            <p class="lead text-muted">Visualiza el rendimiento y cumplimiento de tus proveedores.</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="row g-4">
             <!-- Gráfico de Estado de Proveedores -->
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Estado General de Proveedores</h2>
-                <div class="h-80 w-full">
-                    <canvas id="supplierStatusChart"></canvas>
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h2 class="card-title h5">Estado General de Proveedores</h2>
+                        <canvas id="supplierStatusChart"></canvas>
+                    </div>
                 </div>
             </div>
 
             <!-- Gráfico de Cumplimiento de Criterios -->
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">Cumplimiento de Criterios de Alta</h2>
-                 <div class="h-80 w-full">
-                    <canvas id="criteriaComplianceChart"></canvas>
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h2 class="card-title h5">Cumplimiento de Criterios de Alta</h2>
+                        <canvas id="criteriaComplianceChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script type="module" src="js/dashboard.js"></script>
-    <script>
-        // Script para el menú móvil
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            var menu = document.getElementById('mobile-menu');
-            menu.classList.toggle('hidden');
-        });
-    </script>
 </body>
 </html>
