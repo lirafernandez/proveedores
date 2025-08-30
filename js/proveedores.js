@@ -105,6 +105,7 @@ class ProveedorManager {
         let proveedoresFiltrados = this.todosLosProveedores.filter(p => {
             const busquedaCoincide = p.nombre.toLowerCase().includes(busqueda) || (p.rfc && p.rfc.toLowerCase().includes(busqueda));
             if (!estadoFiltro) return busquedaCoincide;
+            const estadoProveedor = this.determinarEstado(p.evaluaciones?.ALTA, p.evaluaciones?.INTERNA);
             const estadoProveedor = this.determinarEstado(p.evaluaciones?.ALTA?.puntaje || 0, p.evaluaciones?.INTERNA?.puntaje || 0);
             return busquedaCoincide && estadoProveedor.toLowerCase() === estadoFiltro;
         });
@@ -149,7 +150,10 @@ class ProveedorManager {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-50 transition-colors';
 
+        const estado = this.determinarEstado(proveedor.evaluaciones?.ALTA, proveedor.evaluaciones?.INTERNA);
+=======
         const estado = this.determinarEstado(proveedor.evaluaciones?.ALTA?.puntaje || 0, proveedor.evaluaciones?.INTERNA?.puntaje || 0);
+ 
         const badgeClass = this.getEstadoBadgeClass(estado);
 
         tr.innerHTML = `
@@ -253,7 +257,27 @@ class ProveedorManager {
             showNotification('Error al guardar el proveedor.', 'error');
         }
     }
+    determinarEstado(evaluacionAlta, evaluacionInterna) {
+        let puntajeFinal;
 
+        const altaExiste = evaluacionAlta && evaluacionAlta.puntaje !== undefined;
+        const internaExiste = evaluacionInterna && evaluacionInterna.puntaje !== undefined;
+
+        if (internaExiste) {
+            // La evaluación interna siempre tiene precedencia para reflejar el rendimiento actual
+            puntajeFinal = evaluacionInterna.puntaje;
+        } else if (altaExiste) {
+            // Si no hay interna, se usa la de alta
+            puntajeFinal = evaluacionAlta.puntaje;
+        } else {
+            // Sin ninguna evaluación, está pendiente
+            return 'PENDIENTE';
+        }
+
+        if (puntajeFinal > 80) return 'APROBADO';
+        if (puntajeFinal >= 60) return 'CONDICIONADO';
+        // Si tiene una evaluación (alta o interna) y no llega a 60, es rechazado.
+        return 'RECHAZADO';
     determinarEstado(puntajeAlta = 0, puntajeInterna = 0) {
         if (puntajeAlta > 80) return 'APROBADO';
         if (puntajeAlta >= 60) return 'CONDICIONADO';

@@ -28,6 +28,26 @@ class DashboardManager {
     }
 
     // Lógica para determinar el estado, consistente con proveedores.js
+    determinarEstado(evaluacionAlta, evaluacionInterna) {
+        let puntajeFinal;
+
+        const altaExiste = evaluacionAlta && evaluacionAlta.puntaje !== undefined;
+        const internaExiste = evaluacionInterna && evaluacionInterna.puntaje !== undefined;
+
+        if (internaExiste) {
+            // La evaluación interna siempre tiene precedencia para reflejar el rendimiento actual
+            puntajeFinal = evaluacionInterna.puntaje;
+        } else if (altaExiste) {
+            // Si no hay interna, se usa la de alta
+            puntajeFinal = evaluacionAlta.puntaje;
+        } else {
+            // Sin ninguna evaluación, está pendiente
+            return 'PENDIENTE';
+        }
+
+        if (puntajeFinal > 80) return 'APROBADO';
+        if (puntajeFinal >= 60) return 'CONDICIONADO';
+        return 'RECHAZADO';
     determinarEstado(puntajeAlta = 0) {
         if (puntajeAlta > 80) return 'APROBADO';
         if (puntajeAlta >= 60) return 'CONDICIONADO';
@@ -47,6 +67,7 @@ class DashboardManager {
         };
 
         suppliers.forEach(supplier => {
+            const status = this.determinarEstado(supplier.evaluaciones?.ALTA, supplier.evaluaciones?.INTERNA);
             const puntajeAlta = supplier.evaluaciones?.ALTA?.puntaje || 0;
             const status = this.determinarEstado(puntajeAlta);
             if (statusCounts.hasOwnProperty(status)) {
