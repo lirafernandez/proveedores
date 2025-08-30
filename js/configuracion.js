@@ -50,14 +50,15 @@ class ConfiguracionManager {
 
         for (const criterio of criterios) {
             const tr = document.createElement('tr');
+            tr.className = 'hover:bg-gray-50';
             tr.innerHTML = `
-                <td>${criterio.nombre}</td>
-                <td>${criterio.ponderacion}%</td>
-                <td>
-                    <button class="btn btn-sm btn-warning btn-editar" data-id="${criterio.id}">
+                <td class="p-4 whitespace-nowrap">${criterio.nombre}</td>
+                <td class="p-4 whitespace-nowrap">${criterio.ponderacion}%</td>
+                <td class="p-4 text-right space-x-2 whitespace-nowrap">
+                    <button class="text-white py-1 px-3 rounded-md shadow-sm bg-yellow-500 hover:bg-yellow-600 btn-editar" data-id="${criterio.id}" title="Editar">
                         <i class="bi bi-pencil-square"></i>
                     </button>
-                    <button class="btn btn-sm btn-danger btn-eliminar" data-id="${criterio.id}">
+                    <button class="text-white py-1 px-3 rounded-md shadow-sm bg-red-500 hover:bg-red-600 btn-eliminar" data-id="${criterio.id}" title="Eliminar">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
