@@ -1,14 +1,13 @@
-import { SupabaseService } from './services/supabaseService.js';
+import { supabaseService } from './services/supabaseService.js';
 
 class DashboardManager {
     constructor() {
-        this.supabase = new SupabaseService();
+        this.supabase = supabaseService;
         this.loadDashboardData();
     }
 
     async loadDashboardData() {
         try {
-            // Usamos Promise.all para cargar proveedores y criterios en paralelo
             const [proveedoresResult, criteria] = await Promise.all([
                 this.supabase.obtenerProveedores({ porPagina: 0 }),
                 this.supabase.obtenerCriterios()
@@ -22,12 +21,11 @@ class DashboardManager {
             console.error('Error loading dashboard data:', error);
             const mainContent = document.querySelector('main');
             if(mainContent) {
-                mainContent.innerHTML = '<div class="text-center text-red-500">Error al cargar los datos del dashboard.</div>';
+                mainContent.innerHTML = '<div class="text-center text-danger">Error al cargar los datos del dashboard.</div>';
             }
         }
     }
 
-    // Lógica para determinar el estado, consistente con proveedores.js
     determinarEstado(evaluacionAlta, evaluacionInterna) {
         let puntajeFinal;
 
@@ -35,24 +33,16 @@ class DashboardManager {
         const internaExiste = evaluacionInterna && evaluacionInterna.puntaje !== undefined;
 
         if (internaExiste) {
-            // La evaluación interna siempre tiene precedencia para reflejar el rendimiento actual
             puntajeFinal = evaluacionInterna.puntaje;
         } else if (altaExiste) {
-            // Si no hay interna, se usa la de alta
             puntajeFinal = evaluacionAlta.puntaje;
         } else {
-            // Sin ninguna evaluación, está pendiente
             return 'PENDIENTE';
         }
 
         if (puntajeFinal > 80) return 'APROBADO';
         if (puntajeFinal >= 60) return 'CONDICIONADO';
         return 'RECHAZADO';
-    determinarEstado(puntajeAlta = 0) {
-        if (puntajeAlta > 80) return 'APROBADO';
-        if (puntajeAlta >= 60) return 'CONDICIONADO';
-        if (puntajeAlta > 0 && puntajeAlta < 60) return 'RECHAZADO';
-        return 'PENDIENTE';
     }
 
     renderSupplierStatusChart(suppliers) {
@@ -68,8 +58,6 @@ class DashboardManager {
 
         suppliers.forEach(supplier => {
             const status = this.determinarEstado(supplier.evaluaciones?.ALTA, supplier.evaluaciones?.INTERNA);
-            const puntajeAlta = supplier.evaluaciones?.ALTA?.puntaje || 0;
-            const status = this.determinarEstado(puntajeAlta);
             if (statusCounts.hasOwnProperty(status)) {
                 statusCounts[status]++;
             }
@@ -83,10 +71,10 @@ class DashboardManager {
                     label: 'Estado de Proveedores',
                     data: Object.values(statusCounts),
                     backgroundColor: [
-                        '#10B981', // APROBADO (Verde)
-                        '#F59E0B', // CONDICIONADO (Ámbar)
-                        '#EF4444', // RECHAZADO (Rojo)
-                        '#6B7280'  // PENDIENTE (Gris)
+                        '#198754', // success
+                        '#ffc107', // warning
+                        '#dc3545', // danger
+                        '#6c757d'  // secondary
                     ],
                     hoverOffset: 4
                 }]
@@ -114,7 +102,6 @@ class DashboardManager {
             const criterioKey = `criterio-${criterio.id}`;
             let count = 0;
             suppliers.forEach(supplier => {
-                // Solo contamos si la evaluación de ALTA existe para este proveedor
                 if (supplier.evaluaciones?.ALTA && supplier.evaluaciones.ALTA.criterios?.[criterioKey]) {
                     count++;
                 }
@@ -132,7 +119,7 @@ class DashboardManager {
                 datasets: [{
                     label: 'Nº de Proveedores que Cumplen',
                     data: chartData,
-                    backgroundColor: '#3B82F6', // Azul
+                    backgroundColor: '#0d6efd', // primary
                     borderRadius: 4,
                 }]
             },
@@ -144,7 +131,7 @@ class DashboardManager {
                     x: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1 // Asegura que el eje X solo muestre enteros
+                            stepSize: 1
                         }
                     }
                 },

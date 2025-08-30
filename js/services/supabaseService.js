@@ -6,7 +6,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Create a single Supabase client instance
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-class SupabaseService {
+export class SupabaseService {
     constructor() {
         // All instances of SupabaseService will share the same client
         this.supabase = supabase;
@@ -114,9 +114,12 @@ class SupabaseService {
             .select('*')
             .eq('proveedor_id', proveedorId)
             .eq('tipo_evaluacion', tipoEvaluacion)
-            .single();
-        if (error && error.code !== 'PGRST116') throw error;
-        return data;
+            .limit(1); // Get at most one record
+
+        if (error) throw error;
+
+        // Return the first record if it exists, otherwise null
+        return data && data.length > 0 ? data[0] : null;
     }
 
     async guardarEvaluacion(evaluacionData) {

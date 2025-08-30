@@ -1,9 +1,9 @@
-import { SupabaseService } from './services/supabaseService.js';
+import { supabaseService } from './services/supabaseService.js';
 import { showNotification } from './ui/notifications.js';
 
 class EvaluacionManager {
     constructor() {
-        this.supabase = new SupabaseService();
+        this.supabase = supabaseService; // Corrected Supabase service instantiation
         this.proveedorActual = null;
         this.evaluacionActual = null;
         this.tipoEvaluacionActual = 'ALTA';
@@ -25,13 +25,12 @@ class EvaluacionManager {
         this.comentariosEvaluacion = document.getElementById('comentariosEvaluacion');
         this.formEvaluacion = document.getElementById('formEvaluacion');
         this.puntajeTotal = document.getElementById('puntajeTotal');
-        this.btnBorrarTodos = document.getElementById('btnBorrarTodosEvaluaciones');
         this.btnCancelar = document.getElementById('btnCancelar');
 
         // Modal de confirmación para borrar todo
-        this.confirmDeleteAllModal = document.getElementById('confirmDeleteAllModal');
+        this.confirmDeleteAllModalEl = document.getElementById('confirmDeleteAllModal');
+        this.confirmDeleteAllModal = new bootstrap.Modal(this.confirmDeleteAllModalEl);
         this.btnConfirmDeleteAll = document.getElementById('btnConfirmDeleteAll');
-        this.btnCancelDeleteAll = document.getElementById('btnCancelDeleteAll');
     }
 
     inicializarEventos() {
@@ -43,18 +42,7 @@ class EvaluacionManager {
         this.btnCancelar.addEventListener('click', () => this.cancelarEvaluacion());
 
         // Eventos del modal de confirmación
-        this.btnBorrarTodos.addEventListener('click', () => this.abrirModalConfirmacion());
         this.btnConfirmDeleteAll.addEventListener('click', () => this.borrarTodasLasEvaluaciones());
-        this.btnCancelDeleteAll.addEventListener('click', () => this.cerrarModalConfirmacion());
-    }
-
-    // --- Métodos de Control de Modales ---
-    abrirModalConfirmacion() {
-        this.confirmDeleteAllModal.classList.remove('hidden');
-    }
-
-    cerrarModalConfirmacion() {
-        this.confirmDeleteAllModal.classList.add('hidden');
     }
 
     async inicializarAplicacion() {
@@ -106,7 +94,7 @@ class EvaluacionManager {
     }
 
     cancelarEvaluacion() {
-        this.formEvaluacion.classList.add('hidden');
+        this.formEvaluacion.classList.add('d-none');
         this.selectProveedor.value = '';
         this.proveedorActual = null;
     }
@@ -118,7 +106,7 @@ class EvaluacionManager {
         }
         try {
             this.proveedorActual = this.todosLosProveedores.find(p => p.id == proveedorId);
-            this.formEvaluacion.classList.remove('hidden');
+            this.formEvaluacion.classList.remove('d-none');
             await this.cargarEvaluacionExistente();
         } catch (error) {
             console.error('Error al cambiar de proveedor:', error);
@@ -131,25 +119,21 @@ class EvaluacionManager {
     }
 
     generarCriterios() {
-        const container = document.querySelector(`#evaluacion${this.tipoEvaluacionActual === 'ALTA' ? 'Alta' : 'Interna'} > div`);
+        const container = document.querySelector(`#evaluacion${this.tipoEvaluacionActual === 'ALTA' ? 'Alta' : 'Interna'} .criterios-container`);
         container.innerHTML = '';
         const criterios = this.criterios[this.tipoEvaluacionActual];
 
         for (const criterio of criterios) {
             const criterioId = `criterio-${criterio.id}`;
             const formGroup = document.createElement('div');
-            formGroup.className = 'p-4 border border-gray-200 rounded-lg';
+            formGroup.className = 'form-check mb-3';
 
             formGroup.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input id="${criterioId}" type="checkbox" data-ponderacion="${criterio.ponderacion}" class="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
-                        <label for="${criterioId}" class="ml-3 block text-md font-medium text-gray-800">${criterio.nombre} (${criterio.ponderacion}%)</label>
-                    </div>
-                </div>
-                <div class="mt-3 ml-8 file-input-container">
-                    <input type="file" id="${criterioId}File" name="${criterioId}File" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                    <div class="file-status-container mt-2 text-sm"></div>
+                <input id="${criterioId}" type="checkbox" data-ponderacion="${criterio.ponderacion}" class="form-check-input">
+                <label for="${criterioId}" class="form-check-label">${criterio.nombre} (${criterio.ponderacion}%)</label>
+                <div class="mt-2">
+                    <input type="file" id="${criterioId}File" name="${criterioId}File" class="form-control form-control-sm">
+                    <div class="file-status-container mt-1 text-muted small"></div>
                 </div>
             `;
 
@@ -204,13 +188,13 @@ class EvaluacionManager {
     }
 
     generarHtmlEstadoArchivo(nombreArchivo, criterioId) {
-        const nombreCorto = nombreArchivo.length > 25 ? nombreArchivo.substring(0, 22) + '...' : nombreArchivo;
+        const nombreCorto = nombreArchivo.length > 20 ? nombreArchivo.substring(0, 17) + '...' : nombreArchivo;
         return `
-            <div class="flex items-center justify-between bg-gray-50 p-2 rounded-md">
-                <span class="text-green-700 font-medium" title="${nombreArchivo}"><i class="bi bi-check-circle-fill mr-2"></i>${nombreCorto}</span>
-                <div class="space-x-2">
-                    <button class="btn-preview text-blue-600 hover:text-blue-800" title="Vista Previa"><i class="bi bi-eye"></i></button>
-                    <button class="btn-delete text-red-600 hover:text-red-800" title="Eliminar"><i class="bi bi-trash"></i></button>
+            <div class="d-flex align-items-center justify-content-between">
+                <span class="text-success" title="${nombreArchivo}"><i class="bi bi-check-circle-fill me-2"></i>${nombreCorto}</span>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary btn-preview py-0 px-1" title="Vista Previa"><i class="bi bi-eye"></i></button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete py-0 px-1" title="Eliminar"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
         `;
@@ -220,11 +204,11 @@ class EvaluacionManager {
         const altaDiv = document.getElementById('evaluacionAlta');
         const internaDiv = document.getElementById('evaluacionInterna');
         if (this.tipoEvaluacionActual === 'ALTA') {
-            altaDiv.classList.remove('hidden');
-            internaDiv.classList.add('hidden');
+            altaDiv.classList.remove('d-none');
+            internaDiv.classList.add('d-none');
         } else {
-            altaDiv.classList.add('hidden');
-            internaDiv.classList.remove('hidden');
+            altaDiv.classList.add('d-none');
+            internaDiv.classList.remove('d-none');
         }
         this.generarCriterios();
     }
@@ -233,7 +217,7 @@ class EvaluacionManager {
         const file = event.target.files[0];
         if (!file || !this.proveedorActual) return;
         const statusContainer = event.target.parentElement.querySelector('.file-status-container');
-        statusContainer.innerHTML = '<span class="text-blue-600">Subiendo...</span>';
+        statusContainer.innerHTML = '<span class="text-primary">Subiendo...</span>';
         try {
             const criterioId = event.target.id.replace('File', '');
             const filePath = `${this.proveedorActual.id}/${criterioId}-${file.name}`;
@@ -250,7 +234,7 @@ class EvaluacionManager {
             showNotification('Archivo subido con éxito.', 'success');
         } catch (error) {
             console.error('Error al guardar el archivo:', error);
-            statusContainer.innerHTML = '<span class="text-red-600">Error al subir</div>';
+            statusContainer.innerHTML = '<span class="text-danger">Error al subir</div>';
             showNotification('Error al subir el archivo.', 'error');
         }
     }
@@ -359,7 +343,7 @@ class EvaluacionManager {
         try {
             await this.supabase.borrarTodasEvaluaciones();
             showNotification('Todas las evaluaciones han sido borradas.', 'success');
-            this.cerrarModalConfirmacion();
+            this.confirmDeleteAllModal.hide();
             this.cancelarEvaluacion();
         } catch (error) {
             console.error('Error al borrar todas las evaluaciones:', error);
@@ -368,13 +352,6 @@ class EvaluacionManager {
     }
 }
 
-// Initialize the manager directly since the script is at the end of the body.
 if (document.getElementById('formEvaluacion')) {
     new EvaluacionManager();
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('formEvaluacion')) {
-        new EvaluacionManager();
-    }
-});
