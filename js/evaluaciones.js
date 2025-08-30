@@ -1,6 +1,5 @@
 import { SupabaseService } from './services/supabaseService.js';
 import { fileToBase64 } from './modules/fileUtils.js';
-import { CRITERIOS_EVALUACION } from './constants.js';
 import { showNotification } from './ui/notifications.js';
 
 class EvaluacionManager {
@@ -9,15 +8,18 @@ class EvaluacionManager {
         this.proveedorActual = null;
         this.evaluacionActual = null;
         this.tipoEvaluacionActual = 'ALTA';
+        this.criterios = { ALTA: [], INTERNA: [] };
+        this.todosLosProveedores = [];
         this.autoSaveTimeout = null;
 
         this.cacheDOM();
         this.inicializarEventos();
-        this.cargarProveedores();
+        this.inicializarAplicacion();
     }
 
     cacheDOM() {
         this.selectProveedor = document.getElementById('selectProveedor');
+        this.searchProveedorInput = document.getElementById('searchProveedor');
         this.tipoEvaluacion = document.getElementById('tipoEvaluacion');
         this.btnGuardarEvaluacion = document.getElementById('btnGuardarEvaluacion');
         this.comentariosEvaluacion = document.getElementById('comentariosEvaluacion');
@@ -32,6 +34,7 @@ class EvaluacionManager {
 
     inicializarEventos() {
         this.selectProveedor.addEventListener('change', (e) => this.cambiarProveedor(e.target.value));
+        this.searchProveedorInput.addEventListener('input', () => this.renderizarProveedores());
         this.tipoEvaluacion.addEventListener('change', (e) => this.cambiarTipoEvaluacion(e.target.value));
         this.btnGuardarEvaluacion.addEventListener('click', () => this.guardarEvaluacion(true));
         this.comentariosEvaluacion.addEventListener('input', () => this.debouncedAutoSave());
@@ -39,27 +42,52 @@ class EvaluacionManager {
         this.btnConfirmDeleteAll.addEventListener('click', () => this.borrarTodasLasEvaluaciones());
     }
 
+    async inicializarAplicacion() {
+        await this.cargarCriterios();
+        await this.cargarProveedores();
+    }
+
+    async cargarCriterios() {
+        try {
+            const criterios = await this.supabase.obtenerCriterios();
+            this.criterios.ALTA = criterios.filter(c => c.tipo_evaluacion === 'ALTA');
+            this.criterios.INTERNA = criterios.filter(c => c.tipo_evaluacion === 'INTERNA');
+        } catch (error) {
+            console.error('Error al cargar criterios:', error);
+            showNotification('No se pudieron cargar los criterios de evaluación.', 'error');
+        }
+    }
+
     async cargarProveedores() {
         try {
             const { data: proveedores } = await this.supabase.obtenerProveedores({ porPagina: 0 });
-            const select = document.getElementById('selectProveedor');
-            select.innerHTML = '<option value="" selected>Seleccione un proveedor...</option>';
-            proveedores.forEach(proveedor => {
-                const option = document.createElement('option');
-                option.value = proveedor.id;
-                option.textContent = `${proveedor.nombre} - ${proveedor.rfc}`;
-                select.appendChild(option);
-            });
+            this.todosLosProveedores = proveedores;
+            this.renderizarProveedores();
 
             const urlParams = new URLSearchParams(window.location.search);
             const proveedorIdFromUrl = urlParams.get('proveedor');
             if (proveedorIdFromUrl) {
-                select.value = proveedorIdFromUrl;
+                this.selectProveedor.value = proveedorIdFromUrl;
                 await this.cambiarProveedor(proveedorIdFromUrl);
             }
         } catch (error) {
             console.error('Error al cargar proveedores:', error);
         }
+    }
+
+    renderizarProveedores() {
+        const busqueda = this.searchProveedorInput.value.toLowerCase();
+        const proveedoresFiltrados = this.todosLosProveedores.filter(p => {
+            return p.nombre.toLowerCase().includes(busqueda) || (p.rfc && p.rfc.toLowerCase().includes(busqueda));
+        });
+
+        this.selectProveedor.innerHTML = '<option value="" selected>Seleccione un proveedor...</option>';
+        proveedoresFiltrados.forEach(proveedor => {
+            const option = document.createElement('option');
+            option.value = proveedor.id;
+            option.textContent = `${proveedor.nombre} - ${proveedor.rfc}`;
+            this.selectProveedor.appendChild(option);
+        });
     }
 
     async cambiarProveedor(proveedorId) {
@@ -84,10 +112,11 @@ class EvaluacionManager {
 
     generarCriterios() {
         const container = document.querySelector(`#evaluacion${this.tipoEvaluacionActual === 'ALTA' ? 'Alta' : 'Interna'} .card-body`);
-        container.innerHTML = ''; // Limpiar contenedor
-        const criterios = CRITERIOS_EVALUACION[this.tipoEvaluacionActual];
+        container.innerHTML = '';
+        const criterios = this.criterios[this.tipoEvaluacionActual];
 
-        for (const [key, criterio] of Object.entries(criterios)) {
+        for (const criterio of criterios) {
+            const criterioId = `criterio-${criterio.id}`;
             const formGroup = document.createElement('div');
             formGroup.className = 'mb-3';
 
@@ -97,13 +126,13 @@ class EvaluacionManager {
             const checkbox = document.createElement('input');
             checkbox.className = 'form-check-input';
             checkbox.type = 'checkbox';
-            checkbox.id = key;
+            checkbox.id = criterioId;
             checkbox.dataset.ponderacion = criterio.ponderacion;
             checkbox.addEventListener('change', () => this.actualizarPuntaje());
 
             const label = document.createElement('label');
             label.className = 'form-check-label';
-            label.htmlFor = key;
+            label.htmlFor = criterioId;
             label.textContent = `${criterio.nombre} (${criterio.ponderacion}%)`;
 
             formCheck.append(checkbox, label);
@@ -114,12 +143,12 @@ class EvaluacionManager {
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.className = 'form-control';
-            fileInput.id = `${key}File`;
-            fileInput.name = `${key}File`;
+            fileInput.id = `${criterioId}File`;
+            fileInput.name = `${criterioId}File`;
             fileInput.addEventListener('change', (e) => this.manejarArchivo(e));
 
             const fileStatus = document.createElement('div');
-            fileStatus.className = 'file-status-container';
+            fileStatus.className = 'file-status-container d-flex align-items-center mt-1';
 
             fileInputContainer.append(fileInput, fileStatus);
             formGroup.append(formCheck, fileInputContainer);
@@ -147,8 +176,8 @@ class EvaluacionManager {
             this.evaluacionActual = evaluacion;
 
             if (evaluacion && evaluacion.criterios) {
-                Object.entries(evaluacion.criterios).forEach(([criterio, valor]) => {
-                    const checkbox = document.getElementById(criterio);
+                Object.entries(evaluacion.criterios).forEach(([criterioId, valor]) => {
+                    const checkbox = document.getElementById(criterioId);
                     if (checkbox) checkbox.checked = !!valor;
                 });
                 document.getElementById('comentariosEvaluacion').value = evaluacion.comentarios || '';
@@ -159,7 +188,13 @@ class EvaluacionManager {
                 const fileInput = document.getElementById(`${doc.tipo}File`);
                 if (fileInput) {
                     const statusContainer = fileInput.parentElement.querySelector('.file-status-container');
-                    if(statusContainer) statusContainer.innerHTML = '<div class="text-success mt-1"><i class="bi bi-check-circle"></i> Documento guardado</div>';
+                    if(statusContainer) {
+                        statusContainer.innerHTML = `
+                            <span class="text-success me-2"><i class="bi bi-check-circle"></i> ${doc.nombre_archivo}</span>
+                            <button class="btn btn-sm btn-outline-primary btn-preview">Vista Previa</button>
+                        `;
+                        statusContainer.querySelector('.btn-preview').addEventListener('click', () => this.previsualizarDocumento(doc.tipo));
+                    }
                 }
             });
 
@@ -200,21 +235,59 @@ class EvaluacionManager {
                 contenido: contenido
             });
 
-            statusContainer.innerHTML = '<div class="text-success mt-1">Guardado</div>';
+            statusContainer.innerHTML = `
+                <span class="text-success me-2"><i class="bi bi-check-circle"></i> ${file.name}</span>
+                <button class="btn btn-sm btn-outline-primary btn-preview">Vista Previa</button>
+            `;
+            statusContainer.querySelector('.btn-preview').addEventListener('click', () => this.previsualizarDocumento(criterioId));
+
         } catch (error) {
             console.error('Error al guardar el archivo:', error);
-            statusContainer.innerHTML = '<div class="text-danger mt-1">Error</div>';
+            statusContainer.innerHTML = '<div class="text-danger mt-1">Error al guardar</div>';
+        }
+    }
+
+    async previsualizarDocumento(criterioId) {
+        try {
+            const doc = await this.supabase.obtenerDocumento(this.proveedorActual.id, criterioId);
+            if (!doc || !doc.contenido) {
+                showNotification('No se encontró el documento para previsualizar.', 'warning');
+                return;
+            }
+
+            const mimeType = this.getFileMimeType(doc.nombre_archivo);
+            const dataUrl = `data:${mimeType};base64,${doc.contenido}`;
+
+            const newWindow = window.open();
+            newWindow.document.write(`<iframe src="${dataUrl}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+
+        } catch (error) {
+            console.error('Error al previsualizar el documento:', error);
+            showNotification('Error al cargar el documento para previsualización.', 'error');
+        }
+    }
+
+    getFileMimeType(filename) {
+        const extension = filename.split('.').pop().toLowerCase();
+        switch (extension) {
+            case 'pdf': return 'application/pdf';
+            case 'png': return 'image/png';
+            case 'jpg':
+            case 'jpeg': return 'image/jpeg';
+            case 'gif': return 'image/gif';
+            case 'txt': return 'text/plain';
+            default: return 'application/octet-stream';
         }
     }
 
     actualizarPuntaje() {
-        const criteriosDefinidos = CRITERIOS_EVALUACION[this.tipoEvaluacionActual];
+        const criteriosDefinidos = this.criterios[this.tipoEvaluacionActual];
         let puntajeTotal = 0;
-        Object.values(criteriosDefinidos).forEach(criterio => puntajeTotal += criterio.ponderacion);
+        criteriosDefinidos.forEach(criterio => puntajeTotal += criterio.ponderacion);
         
         let puntajeObtenido = 0;
-        Object.entries(criteriosDefinidos).forEach(([key, criterio]) => {
-            const checkbox = document.getElementById(key);
+        criteriosDefinidos.forEach(criterio => {
+            const checkbox = document.getElementById(`criterio-${criterio.id}`);
             if (checkbox && checkbox.checked) {
                 puntajeObtenido += criterio.ponderacion;
             }
@@ -237,10 +310,10 @@ class EvaluacionManager {
 
         try {
             const criterios = {};
-            const criteriosDefinidos = CRITERIOS_EVALUACION[this.tipoEvaluacionActual];
-            Object.keys(criteriosDefinidos).forEach(key => {
-                const checkbox = document.getElementById(key);
-                if(checkbox) criterios[key] = checkbox.checked;
+            const criteriosDefinidos = this.criterios[this.tipoEvaluacionActual];
+            criteriosDefinidos.forEach(criterio => {
+                const checkbox = document.getElementById(`criterio-${criterio.id}`);
+                if(checkbox) criterios[`criterio-${criterio.id}`] = checkbox.checked;
             });
 
             const puntaje = parseFloat(document.getElementById('puntajeTotal').textContent);
@@ -274,7 +347,7 @@ class EvaluacionManager {
             await this.supabase.borrarTodasEvaluaciones();
             showNotification('Todas las evaluaciones han sido borradas.', 'success');
             this.confirmDeleteAllModal.hide();
-            this.cargarProveedores(); // Recargar para refrescar la vista
+            this.cargarProveedores();
         } catch (error) {
             console.error('Error al borrar todas las evaluaciones:', error);
             showNotification('Error al borrar las evaluaciones.', 'error');

@@ -1,5 +1,4 @@
 import { SupabaseService } from './services/supabaseService.js';
-import { CRITERIOS_EVALUACION } from './constants.js';
 import { showNotification } from './ui/notifications.js';
 
 class ProveedorManager {

@@ -53,6 +53,29 @@ CREATE TABLE public.documentos (
     UNIQUE (proveedor_id, tipo)
 );
 
+CREATE TABLE IF NOT EXISTS criterios (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    ponderacion INTEGER NOT NULL,
+    tipo_evaluacion VARCHAR(50) NOT NULL -- 'ALTA' o 'INTERNA'
+);
+
+-- Insertar criterios iniciales
+INSERT INTO criterios (nombre, ponderacion, tipo_evaluacion) VALUES
+('Carta Opinión Positiva del mes en curso', 10, 'ALTA'),
+('Estado de Cuenta (no mayor a 3 meses)', 10, 'ALTA'),
+('Constancia de Situación Fiscal', 10, 'ALTA'),
+('Comprobante de Domicilio', 6, 'ALTA'),
+('Formato Alta de Proveedores', 5, 'INTERNA'),
+('Verificación de Dirección Física', 10, 'INTERNA'),
+('Contactos de Ventas/Finanzas (2 o más)', 5, 'INTERNA'),
+('Legitimidad de Papelería', 10, 'INTERNA'),
+('Referencias de Clientes', 6, 'INTERNA'),
+('Acta Constitutiva', 6, 'INTERNA'),
+('Registro Patronal', 5, 'INTERNA'),
+('Estados Financieros', 5, 'INTERNA'),
+('INE del Representante Legal', 6, 'INTERNA');
+
 -- Re-crea y activa las políticas de seguridad para todas las tablas
 CREATE POLICY "Public Full Access for Proveedores" ON public.proveedores FOR ALL USING (true) WITH CHECK (true);
 ALTER TABLE public.proveedores ENABLE ROW LEVEL SECURITY;
@@ -62,3 +85,6 @@ ALTER TABLE public.evaluaciones ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public Full Access for Documentos" ON public.documentos FOR ALL USING (true) WITH CHECK (true);
 ALTER TABLE public.documentos ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public Full Access for Criterios" ON public.criterios FOR ALL USING (true) WITH CHECK (true);
+ALTER TABLE public.criterios ENABLE ROW LEVEL SECURITY;
