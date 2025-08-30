@@ -196,4 +196,50 @@ class ProveedorManager {
             return;
         }
 
-        const
+        const formData = new FormData(form);
+        const proveedorData = Object.fromEntries(formData.entries());
+
+        // Si estamos editando, añadimos el ID al objeto de datos
+        if (this.proveedorSeleccionado) {
+            proveedorData.id = this.proveedorSeleccionado.id;
+        }
+
+        try {
+            await this.supabase.guardarProveedor(proveedorData);
+            showNotification('Proveedor guardado con éxito', 'success');
+            this.modal.hide();
+        } catch (error) {
+            console.error('Error al guardar proveedor:', error);
+            showNotification('Error al guardar el proveedor.', 'error');
+        }
+    }
+
+    determinarEstado(puntajeAlta, puntajeInterna) {
+        if (puntajeAlta === 0 && puntajeInterna === 0) return 'PENDIENTE';
+        if (puntajeAlta > 80) return 'APROBADO';
+        if (puntajeAlta >= 60 && puntajeAlta <= 80) return 'CONDICIONADO';
+        if (puntajeAlta < 60) return 'RECHAZADO';
+        return 'PENDIENTE';
+    }
+
+    getEstadoBadgeClass(estado) {
+        switch (estado.toLowerCase()) {
+            case 'aprobado': return 'bg-success';
+            case 'condicionado': return 'bg-warning text-dark';
+            case 'rechazado': return 'bg-danger';
+            case 'pendiente': return 'bg-secondary';
+            default: return 'bg-light text-dark';
+        }
+    }
+
+    irAEvaluacion(proveedorId) {
+        window.location.href = `evaluaciones.html?proveedor=${proveedorId}`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Asegurarnos de que el código solo se ejecute en la página de proveedores
+    if (document.getElementById('proveedoresTableBody')) {
+        new ProveedorManager();
+    }
+});
