@@ -267,3 +267,8 @@ h1, h2, h3, h4, h5, h6 {
 .table tbody tr, .card {
     animation: fadeIn 0.5s ease-in-out;
 }
+
+/* Estilo para el área de arrastrar y soltar archivos */
+#drop-area {
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
