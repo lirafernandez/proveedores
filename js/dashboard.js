@@ -26,23 +26,30 @@ class DashboardManager {
         }
     }
 
-    determinarEstado(evaluacionAlta, evaluacionInterna) {
-        let puntajeFinal;
+    obtenerDatosEstado(evaluacionAlta, evaluacionInterna) {
+        let puntajeFinal = null;
+        let estado = 'PENDIENTE';
 
-        const altaExiste = evaluacionAlta && evaluacionAlta.puntaje !== undefined;
-        const internaExiste = evaluacionInterna && evaluacionInterna.puntaje !== undefined;
+        const altaExiste = evaluacionAlta && evaluacionAlta.puntaje !== undefined && evaluacionAlta.puntaje !== null;
+        const internaExiste = evaluacionInterna && evaluacionInterna.puntaje !== undefined && evaluacionInterna.puntaje !== null;
 
         if (internaExiste) {
             puntajeFinal = evaluacionInterna.puntaje;
         } else if (altaExiste) {
             puntajeFinal = evaluacionAlta.puntaje;
-        } else {
-            return 'PENDIENTE';
         }
 
-        if (puntajeFinal > 80) return 'APROBADO';
-        if (puntajeFinal >= 60) return 'CONDICIONADO';
-        return 'RECHAZADO';
+        if (puntajeFinal !== null) {
+            if (puntajeFinal > 80) {
+                estado = 'APROBADO';
+            } else if (puntajeFinal >= 60) {
+                estado = 'CONDICIONADO';
+            } else {
+                estado = 'RECHAZADO';
+            }
+        }
+
+        return { estado, puntaje: puntajeFinal };
     }
 
     renderSupplierStatusChart(suppliers) {
@@ -57,9 +64,9 @@ class DashboardManager {
         };
 
         suppliers.forEach(supplier => {
-            const status = this.determinarEstado(supplier.evaluaciones?.ALTA, supplier.evaluaciones?.INTERNA);
-            if (statusCounts.hasOwnProperty(status)) {
-                statusCounts[status]++;
+            const { estado } = this.obtenerDatosEstado(supplier.evaluaciones?.ALTA, supplier.evaluaciones?.INTERNA);
+            if (statusCounts.hasOwnProperty(estado)) {
+                statusCounts[estado]++;
             }
         });
 

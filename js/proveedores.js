@@ -85,8 +85,8 @@ class ProveedorManager {
         let proveedoresFiltrados = this.todosLosProveedores.filter(p => {
             const busquedaCoincide = p.nombre.toLowerCase().includes(busqueda) || (p.rfc && p.rfc.toLowerCase().includes(busqueda));
             if (!estadoFiltro) return busquedaCoincide;
-            const estadoProveedor = this.determinarEstado(p.evaluaciones?.ALTA, p.evaluaciones?.INTERNA);
-            return busquedaCoincide && estadoProveedor.toLowerCase() === estadoFiltro;
+            const { estado } = this.obtenerDatosEstado(p.evaluaciones?.ALTA, p.evaluaciones?.INTERNA);
+            return busquedaCoincide && estado.toLowerCase() === estadoFiltro;
         });
 
         const total = proveedoresFiltrados.length;
@@ -137,14 +137,18 @@ class ProveedorManager {
     crearFilaProveedor(proveedor) {
         const tr = document.createElement('tr');
         
-        const estado = this.determinarEstado(proveedor.evaluaciones?.ALTA, proveedor.evaluaciones?.INTERNA);
+        const { estado, puntaje } = this.obtenerDatosEstado(proveedor.evaluaciones?.ALTA, proveedor.evaluaciones?.INTERNA);
         const badgeClass = this.getEstadoBadgeClass(estado);
+        const puntajeDisplay = puntaje !== null ? `<strong class="ms-2">${puntaje}%</strong>` : '';
 
         tr.innerHTML = `
             <td>${proveedor.nombre}</td>
             <td>${proveedor.rfc || 'N/A'}</td>
             <td>${proveedor.fecha_alta ? new Date(proveedor.fecha_alta).toLocaleDateString() : 'N/A'}</td>
-            <td><span class="badge ${badgeClass}">${estado}</span></td>
+            <td>
+                <span class="badge ${badgeClass}">${estado}</span>
+                ${puntajeDisplay}
+            </td>
             <td class="text-end"></td>
         `;
 
@@ -242,23 +246,30 @@ class ProveedorManager {
         }
     }
 
-    determinarEstado(evaluacionAlta, evaluacionInterna) {
-        let puntajeFinal;
+    obtenerDatosEstado(evaluacionAlta, evaluacionInterna) {
+        let puntajeFinal = null;
+        let estado = 'PENDIENTE';
 
-        const altaExiste = evaluacionAlta && evaluacionAlta.puntaje !== undefined;
-        const internaExiste = evaluacionInterna && evaluacionInterna.puntaje !== undefined;
+        const altaExiste = evaluacionAlta && evaluacionAlta.puntaje !== undefined && evaluacionAlta.puntaje !== null;
+        const internaExiste = evaluacionInterna && evaluacionInterna.puntaje !== undefined && evaluacionInterna.puntaje !== null;
 
         if (internaExiste) {
             puntajeFinal = evaluacionInterna.puntaje;
         } else if (altaExiste) {
             puntajeFinal = evaluacionAlta.puntaje;
-        } else {
-            return 'PENDIENTE';
         }
 
-        if (puntajeFinal > 80) return 'APROBADO';
-        if (puntajeFinal >= 60) return 'CONDICIONADO';
-        return 'RECHAZADO';
+        if (puntajeFinal !== null) {
+            if (puntajeFinal > 80) {
+                estado = 'APROBADO';
+            } else if (puntajeFinal >= 60) {
+                estado = 'CONDICIONADO';
+            } else {
+                estado = 'RECHAZADO';
+            }
+        }
+
+        return { estado, puntaje: puntajeFinal };
     }
 
     getEstadoBadgeClass(estado) {

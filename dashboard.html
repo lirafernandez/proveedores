@@ -56,9 +56,11 @@
             <!-- Gráfico de Estado de Proveedores -->
             <div class="col-lg-6">
                 <div class="card shadow-sm h-100">
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column">
                         <h2 class="card-title h5">Estado General de Proveedores</h2>
-                        <canvas id="supplierStatusChart"></canvas>
+                        <div class="chart-container mt-auto" style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="supplierStatusChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -66,9 +68,11 @@
             <!-- Gráfico de Cumplimiento de Criterios -->
             <div class="col-lg-6">
                 <div class="card shadow-sm h-100">
-                    <div class="card-body">
+                    <div class="card-body d-flex flex-column">
                         <h2 class="card-title h5">Cumplimiento de Criterios de Alta</h2>
-                        <canvas id="criteriaComplianceChart"></canvas>
+                        <div class="chart-container mt-auto" style="position: relative; height: 300px; width: 100%;">
+                            <canvas id="criteriaComplianceChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
