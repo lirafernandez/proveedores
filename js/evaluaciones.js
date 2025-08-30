@@ -76,7 +76,7 @@ class EvaluacionManager {
     async cargarProveedores() {
         try {
             const { data: proveedores } = await this.supabase.obtenerProveedores({ porPagina: 0 });
-            this.todosLosProveedores = proveedores;
+            this.todosLosProveedores = proveedores || [];
             this.renderizarProveedores();
 
             const urlParams = new URLSearchParams(window.location.search);
@@ -369,7 +369,7 @@ class EvaluacionManager {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('formEvaluacion')) {
-        new EvaluacionManager();
-    }
+    if (document.getElementById('formEvaluacion')) {
+        new EvaluacionManager();
+    }
 });
