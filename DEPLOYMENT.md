@@ -56,3 +56,23 @@ Esta es una de las varias maneras de manejar las credenciales en producción. La
 3.  **No** establezcas un comando de construcción y deja el directorio de publicación como el raíz.
 4.  Ve a la configuración del sitio y añade las variables de entorno para la URL y la clave de Supabase.
 5.  Adapta el código para leer estas variables de entorno (esto es un paso de desarrollo, no de despliegue). Por ahora, la forma más sencilla es reemplazar manualmente el contenido de `js/config.js` en tu entorno de producción o antes de desplegar.
+
+## Recomendaciones de Optimización
+
+### Almacenamiento de Archivos
+
+Actualmente, los archivos cargados se guardan como cadenas de texto en formato base64 directamente en la base de datos de Supabase. Este método puede ser ineficiente y costoso si se cargan archivos grandes o en gran cantidad.
+
+**Recomendación:** Migrar al uso de **Supabase Storage**.
+
+*   **Ventajas:**
+    *   **Más eficiente:** Supabase Storage está optimizado para almacenar y servir archivos grandes.
+    *   **Mejor rendimiento:** La carga y descarga de archivos será más rápida.
+    *   **Más económico:** Generalmente, el costo de almacenamiento de objetos es menor que el de una base de datos.
+    *   **Funcionalidades avanzadas:** Permite gestionar permisos de acceso, generar URLs firmadas, etc.
+
+*   **Pasos para la migración:**
+    1.  Crear un "bucket" de almacenamiento en el panel de control de Supabase.
+    2.  Actualizar la lógica de carga de archivos (`manejarArchivo` en `js/evaluaciones.js`) para subir los archivos a Supabase Storage en lugar de convertirlos a base64.
+    3.  Al guardar, almacenar únicamente la URL o la ruta del archivo en la base de datos, no el contenido completo.
+    4.  Actualizar la lógica de previsualización (`previsualizarDocumento`) para que utilice la URL del archivo almacenado.
