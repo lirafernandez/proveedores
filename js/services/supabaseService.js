@@ -10,12 +10,27 @@ class SupabaseService {
 
     // === MÉTODOS DE PROVEEDORES ===
 
-    async obtenerProveedores() {
-        const { data, error } = await this.supabase
+    async obtenerProveedores({ pagina = 1, porPagina = 25, busqueda = '' } = {}) {
+        let query = this.supabase
             .from('proveedores')
-            .select('*');
+            .select('*', { count: 'exact' });
+
+        // Lógica de búsqueda
+        if (busqueda) {
+            query = query.or(`nombre.ilike.%${busqueda}%,rfc.ilike.%${busqueda}%`);
+        }
+
+        // Lógica de paginación
+        if (porPagina > 0) {
+            const from = (pagina - 1) * porPagina;
+            const to = from + porPagina - 1;
+            query = query.range(from, to);
+        }
+
+        const { data, error, count } = await query;
+
         if (error) throw error;
-        return data || [];
+        return { data: data || [], count: count };
     }
 
     async obtenerProveedorPorId(id) {
