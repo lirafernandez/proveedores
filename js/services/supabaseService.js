@@ -114,9 +114,12 @@ export class SupabaseService {
             .select('*')
             .eq('proveedor_id', proveedorId)
             .eq('tipo_evaluacion', tipoEvaluacion)
-            .single();
-        if (error && error.code !== 'PGRST116') throw error;
-        return data;
+            .limit(1); // Get at most one record
+
+        if (error) throw error;
+
+        // Return the first record if it exists, otherwise null
+        return data && data.length > 0 ? data[0] : null;
     }
 
     async guardarEvaluacion(evaluacionData) {
