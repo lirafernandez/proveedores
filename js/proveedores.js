@@ -1,9 +1,9 @@
-import { SupabaseService } from './services/supabaseService.js';
+import { supabaseService } from './services/supabaseService.js';
 import { showNotification } from './ui/notifications.js';
 
 class ProveedorManager {
     constructor() {
-        this.supabase = new SupabaseService();
+        this.supabase = supabaseService;
         this.proveedorSeleccionado = null;
         this.proveedorAEliminar = null;
         this.paginaActual = 1;
@@ -22,7 +22,7 @@ class ProveedorManager {
         this.searchProveedor = document.getElementById('searchProveedor');
         this.filterEstado = document.getElementById('filterEstado');
         this.pagSel = document.getElementById('selectProveedoresPorPagina');
-
+        
         // Tabla y paginación
         this.proveedoresTableBody = document.getElementById('proveedoresTableBody');
         this.paginacionContainer = document.getElementById('paginacionProveedores');
@@ -32,7 +32,7 @@ class ProveedorManager {
         this.btnGuardarProveedor = document.getElementById('btnGuardarProveedor');
         this.closeProveedorModal = document.getElementById('closeProveedorModal');
         this.cancelProveedorModal = document.getElementById('cancelProveedorModal');
-
+        
         // Modal de Confirmación de Eliminación
         this.confirmDeleteModal = document.getElementById('confirmDeleteModal');
         this.btnConfirmDelete = document.getElementById('btnConfirmDelete');
@@ -106,13 +106,12 @@ class ProveedorManager {
             const busquedaCoincide = p.nombre.toLowerCase().includes(busqueda) || (p.rfc && p.rfc.toLowerCase().includes(busqueda));
             if (!estadoFiltro) return busquedaCoincide;
             const estadoProveedor = this.determinarEstado(p.evaluaciones?.ALTA, p.evaluaciones?.INTERNA);
-            const estadoProveedor = this.determinarEstado(p.evaluaciones?.ALTA?.puntaje || 0, p.evaluaciones?.INTERNA?.puntaje || 0);
             return busquedaCoincide && estadoProveedor.toLowerCase() === estadoFiltro;
         });
 
         const total = proveedoresFiltrados.length;
         this.totalPaginas = this.proveedoresPorPagina > 0 ? Math.ceil(total / this.proveedoresPorPagina) : 1;
-
+        
         const proveedoresPaginados = this.proveedoresPorPagina > 0
             ? proveedoresFiltrados.slice((this.paginaActual - 1) * this.proveedoresPorPagina, this.paginaActual * this.proveedoresPorPagina)
             : proveedoresFiltrados;
@@ -129,7 +128,7 @@ class ProveedorManager {
 
         this.renderizarPaginacion(total);
     }
-
+    
     renderizarPaginacion() {
         this.paginacionContainer.innerHTML = '';
         if (this.totalPaginas <= 1) return;
@@ -149,11 +148,8 @@ class ProveedorManager {
     crearFilaProveedor(proveedor) {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-50 transition-colors';
-
+        
         const estado = this.determinarEstado(proveedor.evaluaciones?.ALTA, proveedor.evaluaciones?.INTERNA);
-=======
-        const estado = this.determinarEstado(proveedor.evaluaciones?.ALTA?.puntaje || 0, proveedor.evaluaciones?.INTERNA?.puntaje || 0);
- 
         const badgeClass = this.getEstadoBadgeClass(estado);
 
         tr.innerHTML = `
@@ -183,7 +179,7 @@ class ProveedorManager {
         });
         return button;
     }
-
+    
     solicitarEliminacion(id) {
         this.proveedorAEliminar = id;
         this.abrirModalEliminacion();
@@ -227,7 +223,7 @@ class ProveedorManager {
                 'primary_flag': 'primaryFlag',
                 'purchasing_email': 'purchasingEmail'
             };
-
+            
             Object.keys(proveedor).forEach(key => {
                 const formElementName = Object.keys(keyMapping).find(k => keyMapping[k] === key) || key;
                  const formElement = form.elements[formElementName] || form.elements[key];
@@ -257,6 +253,7 @@ class ProveedorManager {
             showNotification('Error al guardar el proveedor.', 'error');
         }
     }
+
     determinarEstado(evaluacionAlta, evaluacionInterna) {
         let puntajeFinal;
 
@@ -278,11 +275,6 @@ class ProveedorManager {
         if (puntajeFinal >= 60) return 'CONDICIONADO';
         // Si tiene una evaluación (alta o interna) y no llega a 60, es rechazado.
         return 'RECHAZADO';
-    determinarEstado(puntajeAlta = 0, puntajeInterna = 0) {
-        if (puntajeAlta > 80) return 'APROBADO';
-        if (puntajeAlta >= 60) return 'CONDICIONADO';
-        if (puntajeAlta > 0 && puntajeAlta < 60) return 'RECHAZADO';
-        return 'PENDIENTE';
     }
 
     getEstadoBadgeClass(estado) {
