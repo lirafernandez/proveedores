@@ -36,17 +36,15 @@
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <div class="row mb-4">
-            <div class="col">
-                <h1>Gestión de Proveedores</h1>
-            </div>
-            <div class="col text-end">
-                <button class="btn btn-danger me-2" id="btnBorrarTodos" title="Borrar todos los proveedores">
-                    <i class="bi bi-trash"></i> Borrar Todos
-                </button>
+    <main class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Gestión de Proveedores</h1>
+            <div class="d-flex gap-2">
+                <a href="importar_proveedores.html" class="btn btn-info">
+                    <i class="bi bi-upload me-2"></i>Importar
+                </a>
                 <button class="btn btn-primary" id="btnNuevoProveedor">
-                    <i class="bi bi-plus-circle"></i> Nuevo Proveedor
+                    <i class="bi bi-plus-circle me-2"></i> Nuevo Proveedor
                 </button>
             </div>
         </div>
@@ -54,58 +52,61 @@
         <!-- Filtros -->
         <div class="card mb-4">
             <div class="card-body">
-                <div class="row">
+                <form class="row g-3 align-items-end">
                     <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">Buscar</label>
-                            <input type="text" class="form-control" id="searchProveedor" placeholder="Nombre o RFC...">
-                        </div>
+                        <label for="searchProveedor" class="form-label">Buscar</label>
+                        <input type="text" class="form-control" id="searchProveedor" placeholder="Nombre, RFC, etc.">
                     </div>
-                    <div class="col-md-4">
-                        <div class="mb-3">
-                            <label class="form-label">Estado de Evaluación</label>
-                            <select class="form-select" id="filterEstado" aria-label="Filtrar por estado de evaluación">
-                                <option value="">Todos</option>
-                                <option value="aprobado">Aprobados</option>
-                                <option value="pendiente">Pendientes</option>
-                                <option value="rechazado">Rechazados</option>
-                            </select>
-                        </div>
+                    <div class="col-md-3">
+                        <label for="filterEstado" class="form-label">Estado Evaluación</label>
+                        <select class="form-select" id="filterEstado">
+                            <option value="">Todos</option>
+                            <option value="Aprobado">Aprobados</option>
+                            <option value="Pendiente">Pendientes</option>
+                            <option value="Rechazado">Rechazados</option>
+                        </select>
                     </div>
-                </div>
+                    <div class="col-md-2">
+                        <label for="selectProveedoresPorPagina" class="form-label">Por Página</label>
+                        <select id="selectProveedoresPorPagina" class="form-select">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div class="col-md-auto">
+                        <button type="button" class="btn btn-danger" id="btnBorrarTodos" title="Borrar todos los proveedores">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
         <!-- Tabla de Proveedores -->
-        <div class="table-responsive">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <div>
-                <label for="selectProveedoresPorPagina" class="form-label mb-0 me-2">Ver:</label>
-                <select id="selectProveedoresPorPagina" class="form-select d-inline-block w-auto">
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="0">Todos</option>
-                </select>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>RFC</th>
+                                <th>Fecha de Alta</th>
+                                <th>Estado</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="proveedoresTableBody">
+                            <!-- Los datos se cargarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+                <nav id="paginacionProveedores" class="mt-3 d-flex justify-content-end"></nav>
             </div>
-            <div id="paginacionProveedores"></div>
         </div>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>RFC</th>
-                    <th>Fecha de Alta</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="proveedoresTableBody">
-                <!-- Los datos se cargarán dinámicamente -->
-            </tbody>
-        </table>
-        </div>
-    </div>
+    </main>
 
     <!-- Modal para Nuevo/Editar Proveedor -->
     <div class="modal fade" id="proveedorModal" tabindex="-1">
@@ -198,6 +199,27 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" id="btnGuardarProveedor">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que quieres eliminar este proveedor? Esta acción no se puede deshacer.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmDelete">Eliminar</button>
                 </div>
             </div>
         </div>

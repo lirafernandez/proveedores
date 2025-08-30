@@ -1,35 +1,54 @@
 import { SupabaseService } from './services/supabaseService.js';
 import { CRITERIOS_EVALUACION } from './constants.js';
+import { showNotification } from './ui/notifications.js';
 
 class ProveedorManager {
     constructor() {
         this.supabase = new SupabaseService();
         this.proveedorSeleccionado = null;
+        this.proveedorAEliminar = null; // Para guardar el ID del proveedor a eliminar
         this.paginaActual = 1;
         this.proveedoresPorPagina = 25;
         this.totalPaginas = 1;
         this.todosLosProveedores = [];
 
+        this.cacheDOM();
         this.inicializarEventos();
         this.cargarProveedores();
     }
 
-    inicializarEventos() {
-        document.getElementById('btnNuevoProveedor').addEventListener('click', () => this.mostrarModalProveedor());
-        document.getElementById('btnGuardarProveedor').addEventListener('click', () => this.guardarProveedor());
-        document.getElementById('searchProveedor').addEventListener('input', () => { this.paginaActual = 1; this.renderizarTabla(); });
-        document.getElementById('filterEstado').addEventListener('change', () => { this.paginaActual = 1; this.renderizarTabla(); });
+    cacheDOM() {
+        this.btnNuevoProveedor = document.getElementById('btnNuevoProveedor');
+        this.btnGuardarProveedor = document.getElementById('btnGuardarProveedor');
+        this.searchProveedor = document.getElementById('searchProveedor');
+        this.filterEstado = document.getElementById('filterEstado');
+        this.pagSel = document.getElementById('selectProveedoresPorPagina');
 
-        const pagSel = document.getElementById('selectProveedoresPorPagina');
-        if (pagSel) {
-            pagSel.addEventListener('change', (e) => {
+        this.modalElement = document.getElementById('proveedorModal');
+        this.modal = new bootstrap.Modal(this.modalElement);
+
+        this.confirmDeleteModalElement = document.getElementById('confirmDeleteModal');
+        this.confirmDeleteModal = new bootstrap.Modal(this.confirmDeleteModalElement);
+        this.btnConfirmDelete = document.getElementById('btnConfirmDelete');
+
+        this.proveedoresTableBody = document.getElementById('proveedoresTableBody');
+        this.paginacionContainer = document.getElementById('paginacionProveedores');
+    }
+
+    inicializarEventos() {
+        if(this.btnNuevoProveedor) this.btnNuevoProveedor.addEventListener('click', () => this.mostrarModalProveedor());
+        if(this.btnGuardarProveedor) this.btnGuardarProveedor.addEventListener('click', () => this.guardarProveedor());
+        if(this.searchProveedor) this.searchProveedor.addEventListener('input', () => { this.paginaActual = 1; this.renderizarTabla(); });
+        if(this.filterEstado) this.filterEstado.addEventListener('change', () => { this.paginaActual = 1; this.renderizarTabla(); });
+        if(this.btnConfirmDelete) this.btnConfirmDelete.addEventListener('click', () => this.ejecutarEliminacion());
+
+        if (this.pagSel) {
+            this.pagSel.addEventListener('change', (e) => {
                 this.proveedoresPorPagina = parseInt(e.target.value);
                 this.paginaActual = 1;
                 this.renderizarTabla();
             });
         }
-
-        this.modal = new bootstrap.Modal(document.getElementById('proveedorModal'));
 
         this.supabase.subscribeToProveedores(() => {
             this.cargarProveedores();
@@ -57,12 +76,14 @@ class ProveedorManager {
             this.renderizarTabla();
         } catch (error) {
             console.error('Error al cargar proveedores:', error);
+            showNotification('Error al cargar los proveedores', 'error');
         }
     }
 
     renderizarTabla() {
-        const busqueda = document.getElementById('searchProveedor').value.toLowerCase();
-        const estadoFiltro = document.getElementById('filterEstado').value;
+        if(!this.proveedoresTableBody) return;
+        const busqueda = this.searchProveedor.value.toLowerCase();
+        const estadoFiltro = this.filterEstado.value;
 
         let proveedoresFiltrados = this.todosLosProveedores.filter(p => {
             const busquedaCoincide = p.nombre.toLowerCase().includes(busqueda) || (p.rfc && p.rfc.toLowerCase().includes(busqueda));
@@ -78,28 +99,40 @@ class ProveedorManager {
             ? proveedoresFiltrados.slice((this.paginaActual - 1) * this.proveedoresPorPagina, this.paginaActual * this.proveedoresPorPagina)
             : proveedoresFiltrados;
 
-        const tbody = document.getElementById('proveedoresTableBody');
-        tbody.innerHTML = '';
+        this.proveedoresTableBody.innerHTML = '';
         proveedoresPaginados.forEach(proveedor => {
             const row = this.crearFilaProveedor(proveedor, proveedor.evaluaciones);
-            tbody.appendChild(row);
+            this.proveedoresTableBody.appendChild(row);
         });
 
-        this.mostrarControlesPaginacion(total);
+        this.renderizarPaginacion(total);
     }
 
-    mostrarControlesPaginacion(total) {
-        const paginacion = document.getElementById('paginacionProveedores');
-        if (!paginacion) return;
-        paginacion.innerHTML = '';
-        if (this.totalPaginas > 1) {
-            let html = `<nav><ul class='pagination justify-content-center'>`;
-            for (let i = 1; i <= this.totalPaginas; i++) {
-                html += `<li class='page-item${i === this.paginaActual ? ' active' : ''}'><a class='page-link' href='#' onclick='proveedorManager.irPagina(${i});return false;'>${i}</a></li>`;
-            }
-            html += `</ul></nav>`;
-            paginacion.innerHTML = html;
+    renderizarPaginacion() {
+        if(!this.paginacionContainer) return;
+        this.paginacionContainer.innerHTML = '';
+        if (this.totalPaginas <= 1) return;
+
+        const nav = document.createElement('nav');
+        const ul = document.createElement('ul');
+        ul.className = 'pagination justify-content-center';
+
+        for (let i = 1; i <= this.totalPaginas; i++) {
+            const li = document.createElement('li');
+            li.className = `page-item${i === this.paginaActual ? ' active' : ''}`;
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.href = '#';
+            a.textContent = i;
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.irPagina(i);
+            });
+            li.appendChild(a);
+            ul.appendChild(li);
         }
+        nav.appendChild(ul);
+        this.paginacionContainer.appendChild(nav);
     }
 
     irPagina(num) {
@@ -120,22 +153,46 @@ class ProveedorManager {
             <td>
                 <span class="badge ${this.getEstadoBadgeClass(estado)}">${estado}</span>
             </td>
-            <td>
-                <button class="btn btn-sm btn-info" onclick="proveedorManager.editarProveedor(${proveedor.id})" title="Editar Proveedor"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-primary" onclick="proveedorManager.irAEvaluacion(${proveedor.id})" title="Evaluar Proveedor"><i class="bi bi-clipboard-check"></i></button>
-                <button class="btn btn-sm btn-danger" onclick="proveedorManager.eliminarProveedor(${proveedor.id})" title="Eliminar Proveedor"><i class="bi bi-trash"></i></button>
-            </td>
         `;
+
+        const actionsTd = document.createElement('td');
+        actionsTd.className = 'text-end';
+
+        const editBtn = this._createActionButton('Editar Proveedor', 'bi-pencil', 'btn-outline-info', () => this.editarProveedor(proveedor.id));
+        const evalBtn = this._createActionButton('Evaluar Proveedor', 'bi-clipboard-check', 'btn-outline-primary', () => this.irAEvaluacion(proveedor.id));
+        const deleteBtn = this._createActionButton('Eliminar Proveedor', 'bi-trash', 'btn-outline-danger', () => this.eliminarProveedor(proveedor.id));
+
+        actionsTd.append(editBtn, evalBtn, deleteBtn);
+        tr.appendChild(actionsTd);
+
         return tr;
     }
 
-    async eliminarProveedor(id) {
-        if (!confirm(`¿Estás seguro de que quieres eliminar al proveedor con ID ${id}?`)) return;
+    _createActionButton(title, icon, btnClass, onClick) {
+        const button = document.createElement('button');
+        button.className = `btn btn-sm ${btnClass} me-2`;
+        button.title = title;
+        button.innerHTML = `<i class="bi ${icon}"></i>`;
+        button.addEventListener('click', onClick);
+        return button;
+    }
+
+    eliminarProveedor(id) {
+        this.proveedorAEliminar = id;
+        this.confirmDeleteModal.show();
+    }
+
+    async ejecutarEliminacion() {
+        if (!this.proveedorAEliminar) return;
         try {
-            await this.supabase.eliminarProveedor(id);
+            await this.supabase.eliminarProveedor(this.proveedorAEliminar);
+            showNotification('Proveedor eliminado con éxito.', 'success');
+            this.proveedorAEliminar = null;
+            this.confirmDeleteModal.hide();
+            this.cargarProveedores(); // Recargar la lista
         } catch (error) {
             console.error('Error al eliminar proveedor:', error);
-            alert('Error al eliminar el proveedor.');
+            showNotification('Error al eliminar el proveedor.', 'error');
         }
     }
 
@@ -175,9 +232,11 @@ class ProveedorManager {
         try {
             await this.supabase.guardarProveedor(proveedorData);
             this.modal.hide();
+            showNotification('Proveedor guardado con éxito.', 'success');
+            this.cargarProveedores(); // Recargar la lista
         } catch (error) {
             console.error('Error al guardar proveedor:', error);
-            alert('Error al guardar el proveedor.');
+            showNotification('Error al guardar el proveedor.', 'error');
         }
     }
 
@@ -189,6 +248,7 @@ class ProveedorManager {
             }
         } catch (error) {
             console.error('Error al cargar proveedor para editar:', error);
+            showNotification('Error al cargar el proveedor para editar.', 'error');
         }
     }
 
@@ -213,5 +273,6 @@ class ProveedorManager {
     }
 }
 
-window.proveedorManager = new ProveedorManager();
-window.eliminarProveedor = (id) => window.proveedorManager.eliminarProveedor(id);
+document.addEventListener('DOMContentLoaded', () => {
+    new ProveedorManager();
+});
