@@ -320,7 +320,7 @@ class EvaluacionManager {
                 if(checkbox) criterios[`criterio-${criterio.id}`] = checkbox.checked;
             });
 
-            const puntaje = parseFloat(document.getElementById('puntajeTotal').textContent);
+            const puntaje = Math.round(parseFloat(document.getElementById('puntajeTotal').textContent));
             const comentarios = document.getElementById('comentariosEvaluacion').value.trim();
 
             const evaluacionData = {
