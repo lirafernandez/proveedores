@@ -6,7 +6,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Create a single Supabase client instance
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-class SupabaseService {
+export class SupabaseService {
     constructor() {
         // All instances of SupabaseService will share the same client
         this.supabase = supabase;

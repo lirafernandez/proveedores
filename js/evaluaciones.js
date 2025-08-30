@@ -1,9 +1,9 @@
-import { SupabaseService } from './services/supabaseService.js';
+import { supabaseService } from './services/supabaseService.js';
 import { showNotification } from './ui/notifications.js';
 
 class EvaluacionManager {
     constructor() {
-        this.supabase = new SupabaseService();
+        this.supabase = supabaseService;
         this.proveedorActual = null;
         this.evaluacionActual = null;
         this.tipoEvaluacionActual = 'ALTA';
@@ -372,9 +372,3 @@ class EvaluacionManager {
 if (document.getElementById('formEvaluacion')) {
     new EvaluacionManager();
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('formEvaluacion')) {
-        new EvaluacionManager();
-    }
-});
