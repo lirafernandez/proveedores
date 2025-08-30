@@ -41,7 +41,7 @@ class EvaluacionManager {
 
     async cargarProveedores() {
         try {
-            const proveedores = await this.supabase.obtenerProveedores();
+            const { data: proveedores } = await this.supabase.obtenerProveedores({ porPagina: 0 });
             const select = document.getElementById('selectProveedor');
             select.innerHTML = '<option value="" selected>Seleccione un proveedor...</option>';
             proveedores.forEach(proveedor => {
