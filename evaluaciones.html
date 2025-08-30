@@ -4,120 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZOOMLION - Evaluación de Proveedores</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="static/css/styles.css?v=1.0">
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">
-                <i class="bi bi-building"></i> ZOOMLION
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="proveedores.html">Proveedores</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="evaluaciones.html">Evaluaciones</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="importar_proveedores.html">Importar Proveedores</a>
-                    </li>
-                </ul>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="index.html" class="text-white text-2xl font-bold flex items-center"><i class="bi bi-building mr-2"></i><span>ZOOMLION</span></a>
+                </div>
+                <div class="hidden md:flex md:items-center md:space-x-4">
+                    <a href="index.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Inicio</a>
+                    <a href="proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Proveedores</a>
+                    <a href="evaluaciones.html" class="text-white bg-gray-900 px-3 py-2 rounded-md text-sm font-medium">Evaluaciones</a>
+                    <a href="dashboard.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                    <a href="importar_proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Importar</a>
+                    <a href="configuracion.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Configuración</a>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-gray-400 hover:text-white focus:outline-none focus:text-white"><i class="bi bi-list text-2xl"></i></button>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="index.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Inicio</a>
+                <a href="proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Proveedores</a>
+                <a href="evaluaciones.html" class="text-white bg-gray-900 block px-3 py-2 rounded-md text-base font-medium">Evaluaciones</a>
+                <a href="dashboard.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
+                <a href="importar_proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Importar</a>
+                <a href="configuracion.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Configuración</a>
             </div>
         </div>
     </nav>
 
-    <main class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="mb-0">Evaluación de Proveedores</h1>
-            <button class="btn btn-danger" id="btnBorrarTodosEvaluaciones" title="Borrar todas las evaluaciones">
-                <i class="bi bi-trash me-2"></i> Borrar Evaluaciones
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-4 md:mb-0">Evaluación de Proveedores</h1>
+            <button id="btnBorrarTodosEvaluaciones" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center">
+                <i class="bi bi-trash mr-2"></i> Borrar Todas las Evaluaciones
             </button>
-        </div>
+        </header>
 
-        <!-- Tabla resumen de evaluaciones -->
-        <div id="tablaResumenEvaluaciones" class="mb-4"></div>
-
-        <!-- Selección -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="bi bi-check2-square me-2"></i>Iniciar Nueva Evaluación</h5>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="searchProveedor" class="form-label">Buscar Proveedor</label>
-                        <input type="text" class="form-control" id="searchProveedor" placeholder="Buscar por nombre o RFC...">
-                        <label for="selectProveedor" class="form-label mt-2">Proveedor</label>
-                        <select class.form-select" id="selectProveedor" aria-label="Seleccionar proveedor">
-                            <option value="" selected>Seleccione un proveedor...</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="tipoEvaluacion" class="form-label">Tipo de Evaluación</label>
-                        <select class="form-select" id="tipoEvaluacion" aria-label="Seleccionar tipo de evaluación">
-                            <option value="ALTA">Evaluación de Alta</option>
-                            <option value="INTERNA">Evaluación Interna</option>
-                        </select>
-                    </div>
+        <!-- Selección de Proveedor y Tipo -->
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Iniciar Nueva Evaluación</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="searchProveedor" class="block text-sm font-medium text-gray-700 mb-1">Buscar Proveedor</label>
+                    <input type="text" id="searchProveedor" placeholder="Buscar por nombre o RFC..." class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label for="selectProveedor" class="block text-sm font-medium text-gray-700 mt-4 mb-1">Seleccionar Proveedor</label>
+                    <select id="selectProveedor" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"></select>
+                </div>
+                <div>
+                    <label for="tipoEvaluacion" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Evaluación</label>
+                    <select id="tipoEvaluacion" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="ALTA">Evaluación de Alta</option>
+                        <option value="INTERNA">Evaluación Interna</option>
+                    </select>
                 </div>
             </div>
         </div>
 
         <!-- Formulario de Evaluación -->
         <div id="formEvaluacion" class="hidden">
-            <div class="row">
-                <div class="col-lg-8">
-                    <!-- Criterios -->
-                    <div id="evaluacionAlta" class="card mb-4">
-                        <div class="card-header">
-                            <h4>Criterios de Alta</h4>
-                        </div>
-                        <div class="card-body">
-                            <!-- Se generará dinámicamente -->
-                        </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Columna de Criterios -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div id="evaluacionAlta" class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Criterios de Alta</h3>
+                        <div class="space-y-4"></div>
                     </div>
-                    <div id="evaluacionInterna" class="card mb-4 hidden">
-                        <div class="card-header">
-                            <h4>Criterios de Evaluación Interna</h4>
-                        </div>
-                        <div class="card-body">
-                            <!-- Se generará dinámicamente -->
-                        </div>
+                    <div id="evaluacionInterna" class="bg-white p-6 rounded-xl shadow-lg hidden">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Criterios de Evaluación Interna</h3>
+                        <div class="space-y-4"></div>
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <!-- Resumen y Acciones -->
-                    <div class="card sticky-top" style="top: 20px;">
-                        <div class="card-header">
-                            <h5><i class="bi bi-calculator me-2"></i>Resumen</h5>
+
+                <!-- Columna de Resumen -->
+                <div class="lg:col-span-1">
+                    <div class="sticky top-10 bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Resumen</h3>
+                        <div class="text-center mb-4">
+                            <p class="text-sm text-gray-600">Puntaje Total</p>
+                            <p id="puntajeTotal" class="text-6xl font-extrabold text-blue-600">0%</p>
                         </div>
-                        <div class="card-body">
-                            <h4 class="text-center mb-3">Puntaje Total</h4>
-                            <h1 class="display-4 text-center fw-bold" id="puntajeTotal">0%</h1>
-                            <hr>
-                            <div class="mb-3">
-                                <label for="comentariosEvaluacion" class="form-label fw-bold">Comentarios</label>
-                                <textarea class="form-control" id="comentariosEvaluacion" rows="5" placeholder="Añadir observaciones..."></textarea>
-                            </div>
-                            <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-primary" id="btnGuardarEvaluacion">
-                                    <i class="fas fa-save me-2"></i>Guardar Evaluación
-                                </button>
-                                <button type="button" class="btn btn-secondary" id="btnCancelar">
-                                    <i class="fas fa-times me-2"></i>Cancelar
-                                </button>
-                            </div>
+                        <hr class="my-4">
+                        <div>
+                            <label for="comentariosEvaluacion" class="block text-sm font-medium text-gray-700 mb-1">Comentarios</label>
+                            <textarea id="comentariosEvaluacion" rows="5" placeholder="Añadir observaciones..." class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+                        <div class="mt-6 space-y-3">
+                            <button type="button" id="btnGuardarEvaluacion" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md flex items-center justify-center">
+                                <i class="fas fa-save mr-2"></i>Guardar Evaluación
+                            </button>
+                            <button type="button" id="btnCancelar" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-md flex items-center justify-center">
+                                <i class="fas fa-times mr-2"></i>Cancelar
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -125,31 +113,30 @@
         </div>
     </main>
 
-    <div id="notification-container"></div>
-
-<!-- Modal de Confirmación de Eliminación Total -->
-<div class="modal fade" id="confirmDeleteAllModal" tabindex="-1" aria-labelledby="confirmDeleteAllModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmDeleteAllModalLabel">Confirmar Eliminación Total</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <p>¿Estás seguro de que quieres borrar <strong>TODAS</strong> las evaluaciones?</p>
-        <p class="text-danger"><strong>¡Esta acción no se puede deshacer!</strong></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="btnConfirmDeleteAll">Sí, Borrar Todo</button>
-      </div>
+    <!-- Modal de Confirmación de Eliminación Total -->
+    <div id="confirmDeleteAllModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-md m-4">
+            <div class="p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Confirmar Eliminación Total</h3>
+                <p class="text-gray-600">¿Estás seguro de que quieres borrar <strong>TODAS</strong> las evaluaciones? <span class="text-red-600 font-semibold">¡Esta acción no se puede deshacer!</span></p>
+            </div>
+            <div class="bg-gray-50 p-4 flex justify-end space-x-3">
+                <button id="btnCancelDeleteAll" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="btnConfirmDeleteAll" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Sí, Borrar Todo</button>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/dexie/dist/dexie.js"></script>
-<script type="module" src="js/evaluaciones.js?v=1.0"></script>
+    <div id="notification-container" class="fixed top-5 right-5 z-50"></div>
+
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script type="module" src="js/evaluaciones.js?v=1.0"></script>
+    <script>
+        // Script para el menú móvil
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            var menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+    </script>
 </body>
 </html>
-

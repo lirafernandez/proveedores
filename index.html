@@ -4,105 +4,119 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZOOMLION - Panel de Control</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="static/css/styles.css?v=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Agregamos un estilo para la transición del menú móvil */
+        #mobile-menu {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800 font-sans">
 
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="index.html">
-                <i class="bi bi-building"></i> ZOOMLION
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="index.html">Inicio</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="proveedores.html">Proveedores</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="evaluaciones.html">Evaluaciones</a>
-                    </li>
-                </ul>
+    <!-- Navbar -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="index.html" class="text-white text-2xl font-bold flex items-center">
+                        <i class="bi bi-building mr-2"></i>
+                        <span>ZOOMLION</span>
+                    </a>
+                </div>
+                <!-- Menú de escritorio -->
+                <div class="hidden md:flex md:items-center md:space-x-4">
+                    <a href="index.html" class="text-white bg-gray-900 px-3 py-2 rounded-md text-sm font-medium">Inicio</a>
+                    <a href="proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Proveedores</a>
+                    <a href="evaluaciones.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Evaluaciones</a>
+                    <a href="dashboard.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                    <a href="importar_proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Importar</a>
+                    <a href="configuracion.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Configuración</a>
+                </div>
+                <!-- Botón de menú móvil -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-gray-400 hover:text-white focus:outline-none focus:text-white">
+                        <i class="bi bi-list text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Menú móvil -->
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="index.html" class="text-white bg-gray-900 block px-3 py-2 rounded-md text-base font-medium">Inicio</a>
+                <a href="proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Proveedores</a>
+                <a href="evaluaciones.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Evaluaciones</a>
+                <a href="dashboard.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
+                <a href="importar_proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Importar</a>
+                <a href="configuracion.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Configuración</a>
             </div>
         </div>
     </nav>
 
-    <main id="app-container" class="container mt-4">
-        <div class="row mb-4">
-            <div class="col">
-                <h1>Panel de Control</h1>
-            </div>
-        </div>
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            <!-- Tarjeta de Proveedores -->
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">
-                            <i class="bi bi-people-fill fs-2 mb-3 d-block"></i> Proveedores
-                        </h5>
-                        <p class="card-text">
-                            Gestiona la lista de proveedores, añade nuevos y consulta su información.
-                        </p>
-                        <div class="d-grid gap-2 mt-4">
-                            <a href="proveedores.html" class="btn btn-primary">
-                                Ver Proveedores
-                            </a>
-                            <a href="importar_proveedores.html" class="btn btn-secondary">
-                                Importar Proveedores
-                            </a>
-                        </div>
+    <!-- Contenido Principal -->
+    <main id="app-container" class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">Panel de Control</h1>
+            <p class="mt-4 text-xl text-gray-600">Gestiona todos los aspectos de tu ecosistema de proveedores.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <!-- Card: Proveedores -->
+            <div class="transform hover:scale-105 transition-transform duration-300 ease-in-out bg-gradient-to-br from-green-600 to-teal-700 text-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8 flex flex-col items-center text-center">
+                    <i class="bi bi-people-fill text-5xl mb-4"></i>
+                    <h2 class="text-2xl font-bold mb-2">Proveedores</h2>
+                    <p class="mb-6 opacity-90">Gestiona la lista de proveedores, añade nuevos y consulta su información.</p>
+                    <div class="w-full space-y-3">
+                        <a href="proveedores.html" class="block w-full bg-white text-green-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors duration-300">Ver Proveedores</a>
+                        <a href="importar_proveedores.html" class="block w-full bg-green-900 bg-opacity-50 text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-75 transition-opacity duration-300">Importar Proveedores</a>
                     </div>
                 </div>
             </div>
-            <!-- Tarjeta de Evaluaciones -->
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">
-                            <i class="bi bi-clipboard-check fs-2 mb-3 d-block"></i> Evaluaciones
-                        </h5>
-                        <p class="card-text">
-                            Realiza y consulta las evaluaciones de desempeño de los proveedores.
-                        </p>
-                        <div class="d-grid gap-2 mt-4">
-                            <a href="evaluaciones.html" class="btn btn-primary">
-                                Ver Evaluaciones
-                            </a>
-                        </div>
+
+            <!-- Card: Evaluaciones -->
+            <div class="transform hover:scale-105 transition-transform duration-300 ease-in-out bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8 flex flex-col items-center text-center">
+                    <i class="bi bi-clipboard-check text-5xl mb-4"></i>
+                    <h2 class="text-2xl font-bold mb-2">Evaluaciones</h2>
+                    <p class="mb-6 opacity-90">Realiza y consulta las evaluaciones de desempeño de los proveedores.</p>
+                    <div class="w-full">
+                        <a href="evaluaciones.html" class="block w-full bg-white text-blue-700 font-bold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors duration-300">Ver Evaluaciones</a>
                     </div>
                 </div>
             </div>
-            <!-- Tarjeta de Configuración (Ejemplo) -->
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">
-                            <i class="bi bi-gear-fill fs-2 mb-3 d-block"></i> Configuración
-                        </h5>
-                        <p class="card-text">
-                            Ajusta la configuración de la aplicación y gestiona los criterios de evaluación.
-                        </p>
-                        <div class="d-grid gap-2 mt-4">
-                            <a href="configuracion.html" class="btn btn-outline-secondary">
-                                Ir a Ajustes
-                            </a>
-                        </div>
+
+            <!-- Card: Configuración -->
+            <div class="transform hover:scale-105 transition-transform duration-300 ease-in-out bg-gradient-to-br from-gray-700 to-gray-800 text-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8 flex flex-col items-center text-center">
+                    <i class="bi bi-gear-fill text-5xl mb-4"></i>
+                    <h2 class="text-2xl font-bold mb-2">Configuración</h2>
+                    <p class="mb-6 opacity-90">Ajusta la configuración y gestiona los criterios de evaluación.</p>
+                    <div class="w-full">
+                        <a href="configuracion.html" class="block w-full bg-white text-gray-800 font-bold py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors duration-300">Ir a Ajustes</a>
                     </div>
                 </div>
             </div>
+
         </div>
     </main>
 
-    <div id="notification-container"></div>
+    <div id="notification-container" class="fixed top-5 right-5 z-50"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Script para el menú móvil
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            var menu = document.getElementById('mobile-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
