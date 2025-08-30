@@ -5,7 +5,7 @@ class ProveedorManager {
     constructor() {
         this.supabase = new SupabaseService();
         this.proveedorSeleccionado = null;
-        this.proveedorAEliminar = null; // Para guardar el ID del proveedor a eliminar
+        this.proveedorAEliminar = null;
         this.paginaActual = 1;
         this.proveedoresPorPagina = 25;
         this.totalPaginas = 1;
@@ -17,46 +17,77 @@ class ProveedorManager {
     }
 
     cacheDOM() {
+        // Botones principales y filtros
         this.btnNuevoProveedor = document.getElementById('btnNuevoProveedor');
-        this.btnGuardarProveedor = document.getElementById('btnGuardarProveedor');
         this.searchProveedor = document.getElementById('searchProveedor');
         this.filterEstado = document.getElementById('filterEstado');
         this.pagSel = document.getElementById('selectProveedoresPorPagina');
 
-        this.modalElement = document.getElementById('proveedorModal');
-        this.modal = new bootstrap.Modal(this.modalElement);
-
-        this.confirmDeleteModalElement = document.getElementById('confirmDeleteModal');
-        this.confirmDeleteModal = new bootstrap.Modal(this.confirmDeleteModalElement);
-        this.btnConfirmDelete = document.getElementById('btnConfirmDelete');
-
+        // Tabla y paginación
         this.proveedoresTableBody = document.getElementById('proveedoresTableBody');
         this.paginacionContainer = document.getElementById('paginacionProveedores');
+
+        // Modal de Proveedor
+        this.proveedorModal = document.getElementById('proveedorModal');
+        this.btnGuardarProveedor = document.getElementById('btnGuardarProveedor');
+        this.closeProveedorModal = document.getElementById('closeProveedorModal');
+        this.cancelProveedorModal = document.getElementById('cancelProveedorModal');
+
+        // Modal de Confirmación de Eliminación
+        this.confirmDeleteModal = document.getElementById('confirmDeleteModal');
+        this.btnConfirmDelete = document.getElementById('btnConfirmDelete');
+        this.btnCancelDelete = document.getElementById('btnCancelDelete');
     }
 
     inicializarEventos() {
+        // Eventos de la página principal
         if (this.btnNuevoProveedor) this.btnNuevoProveedor.addEventListener('click', () => this.mostrarModalProveedor());
-        if (this.btnGuardarProveedor) this.btnGuardarProveedor.addEventListener('click', () => this.guardarProveedor());
         if (this.searchProveedor) this.searchProveedor.addEventListener('input', () => { this.paginaActual = 1; this.renderizarTabla(); });
         if (this.filterEstado) this.filterEstado.addEventListener('change', () => { this.paginaActual = 1; this.renderizarTabla(); });
-        if (this.btnConfirmDelete) this.btnConfirmDelete.addEventListener('click', () => this.ejecutarEliminacion());
-
         if (this.pagSel) {
             this.pagSel.addEventListener('change', (e) => {
-                this.proveedoresPorPagina = parseInt(e.target.value);
+                this.proveedoresPorPagina = parseInt(e.target.value, 10) || 0;
                 this.paginaActual = 1;
                 this.renderizarTabla();
             });
         }
 
+        // Eventos del Modal de Proveedor
+        if (this.btnGuardarProveedor) this.btnGuardarProveedor.addEventListener('click', () => this.guardarProveedor());
+        if (this.closeProveedorModal) this.closeProveedorModal.addEventListener('click', () => this.cerrarModalProveedor());
+        if (this.cancelProveedorModal) this.cancelProveedorModal.addEventListener('click', () => this.cerrarModalProveedor());
+
+        // Eventos del Modal de Eliminación
+        if (this.btnConfirmDelete) this.btnConfirmDelete.addEventListener('click', () => this.ejecutarEliminacion());
+        if (this.btnCancelDelete) this.btnCancelDelete.addEventListener('click', () => this.cerrarModalEliminacion());
+
+        // Suscripción a cambios en Supabase
         this.supabase.subscribeToProveedores(() => {
             this.cargarProveedores();
         });
     }
 
+    // --- Métodos de Control de Modales ---
+    abrirModalProveedor() {
+        this.proveedorModal.classList.remove('hidden');
+    }
+
+    cerrarModalProveedor() {
+        this.proveedorModal.classList.add('hidden');
+    }
+
+    abrirModalEliminacion() {
+        this.confirmDeleteModal.classList.remove('hidden');
+    }
+
+    cerrarModalEliminacion() {
+        this.confirmDeleteModal.classList.add('hidden');
+    }
+
+    // --- Métodos de Lógica de Datos ---
     async cargarProveedores() {
         try {
-            const { data } = await this.supabase.obtenerProveedores({ porPagina: 0 }); // Obtener todos
+            const { data } = await this.supabase.obtenerProveedores({ porPagina: 0 });
             this.todosLosProveedores = data;
             this.renderizarTabla();
         } catch (error) {
@@ -67,38 +98,30 @@ class ProveedorManager {
 
     renderizarTabla() {
         if (!this.proveedoresTableBody) return;
+
         const busqueda = this.searchProveedor.value.toLowerCase();
         const estadoFiltro = this.filterEstado.value;
 
         let proveedoresFiltrados = this.todosLosProveedores.filter(p => {
             const busquedaCoincide = p.nombre.toLowerCase().includes(busqueda) || (p.rfc && p.rfc.toLowerCase().includes(busqueda));
             if (!estadoFiltro) return busquedaCoincide;
-
-            const estadoProveedor = this.determinarEstado(
-                p.evaluaciones?.ALTA?.puntaje || 0,
-                p.evaluaciones?.INTERNA?.puntaje || 0
-            );
+            const estadoProveedor = this.determinarEstado(p.evaluaciones?.ALTA, p.evaluaciones?.INTERNA);
             return busquedaCoincide && estadoProveedor.toLowerCase() === estadoFiltro;
         });
 
         const total = proveedoresFiltrados.length;
         this.totalPaginas = this.proveedoresPorPagina > 0 ? Math.ceil(total / this.proveedoresPorPagina) : 1;
+
         const proveedoresPaginados = this.proveedoresPorPagina > 0
             ? proveedoresFiltrados.slice((this.paginaActual - 1) * this.proveedoresPorPagina, this.paginaActual * this.proveedoresPorPagina)
             : proveedoresFiltrados;
 
         this.proveedoresTableBody.innerHTML = '';
         if (proveedoresPaginados.length === 0) {
-            const tr = document.createElement('tr');
-            const td = document.createElement('td');
-            td.colSpan = 5;
-            td.className = 'text-center text-muted py-5';
-            td.textContent = 'No se encontraron proveedores.';
-            tr.appendChild(td);
-            this.proveedoresTableBody.appendChild(tr);
+            this.proveedoresTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 py-10">No se encontraron proveedores.</td></tr>`;
         } else {
             proveedoresPaginados.forEach(proveedor => {
-                const row = this.crearFilaProveedor(proveedor, proveedor.evaluaciones);
+                const row = this.crearFilaProveedor(proveedor);
                 this.proveedoresTableBody.appendChild(row);
             });
         }
@@ -108,10 +131,12 @@ class ProveedorManager {
 
     renderizarPaginacion() {
         this.paginacionContainer.innerHTML = '';
+        if (this.totalPaginas <= 1) return;
+
         for (let i = 1; i <= this.totalPaginas; i++) {
             const btn = document.createElement('button');
             btn.textContent = i;
-            btn.className = `btn btn-sm ${i === this.paginaActual ? 'btn-primary' : 'btn-outline-primary'} me-1`;
+            btn.className = `px-3 py-1 rounded-md text-sm font-medium mx-1 ${i === this.paginaActual ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`;
             btn.addEventListener('click', () => {
                 this.paginaActual = i;
                 this.renderizarTabla();
@@ -120,41 +145,44 @@ class ProveedorManager {
         }
     }
 
-    crearFilaProveedor(proveedor, evaluaciones) {
+    crearFilaProveedor(proveedor) {
         const tr = document.createElement('tr');
-        const estado = this.determinarEstado(
-            evaluaciones?.ALTA?.puntaje || 0,
-            evaluaciones?.INTERNA?.puntaje || 0
-        );
+        tr.className = 'hover:bg-gray-50 transition-colors';
+
+        const estado = this.determinarEstado(proveedor.evaluaciones?.ALTA, proveedor.evaluaciones?.INTERNA);
+        const badgeClass = this.getEstadoBadgeClass(estado);
 
         tr.innerHTML = `
-            <td>${proveedor.nombre}</td>
-            <td>${proveedor.rfc || ''}</td>
-            <td>${proveedor.fecha_alta ? new Date(proveedor.fecha_alta).toLocaleDateString() : ''}</td>
-            <td><span class="badge ${this.getEstadoBadgeClass(estado)}">${estado}</span></td>
-            <td class="text-end"></td>
+            <td class="p-4">${proveedor.nombre}</td>
+            <td class="p-4">${proveedor.rfc || 'N/A'}</td>
+            <td class="p-4">${proveedor.fecha_alta ? new Date(proveedor.fecha_alta).toLocaleDateString() : 'N/A'}</td>
+            <td class="p-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${badgeClass}">${estado}</span></td>
+            <td class="p-4 text-right"></td>
         `;
 
         const accionesTd = tr.querySelector('td:last-child');
-        accionesTd.appendChild(this._createActionButton('Editar', 'bi-pencil', 'btn-primary', () => this.editarProveedor(proveedor.id)));
-        accionesTd.appendChild(this._createActionButton('Eliminar', 'bi-trash', 'btn-danger', () => this.eliminarProveedor(proveedor.id)));
-        accionesTd.appendChild(this._createActionButton('Evaluar', 'bi-clipboard-check', 'btn-info', () => this.irAEvaluacion(proveedor.id)));
+        accionesTd.appendChild(this._createActionButton('Evaluar', 'bi-clipboard-check', 'bg-blue-500 hover:bg-blue-600', () => this.irAEvaluacion(proveedor.id)));
+        accionesTd.appendChild(this._createActionButton('Editar', 'bi-pencil', 'bg-yellow-500 hover:bg-yellow-600', () => this.mostrarModalProveedor(proveedor)));
+        accionesTd.appendChild(this._createActionButton('Eliminar', 'bi-trash', 'bg-red-500 hover:bg-red-600', () => this.solicitarEliminacion(proveedor.id)));
 
         return tr;
     }
 
     _createActionButton(title, icon, btnClass, onClick) {
         const button = document.createElement('button');
-        button.className = `btn btn-sm ${btnClass} me-2`;
+        button.className = `text-white p-2 rounded-md shadow-sm hover:shadow-lg transition-all duration-200 mx-1 ${btnClass}`;
         button.title = title;
         button.innerHTML = `<i class="bi ${icon}"></i>`;
-        button.addEventListener('click', onClick);
+        button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            onClick();
+        });
         return button;
     }
 
-    eliminarProveedor(id) {
+    solicitarEliminacion(id) {
         this.proveedorAEliminar = id;
-        this.confirmDeleteModal.show();
+        this.abrirModalEliminacion();
     }
 
     async ejecutarEliminacion() {
@@ -163,7 +191,7 @@ class ProveedorManager {
             await this.supabase.eliminarProveedor(this.proveedorAEliminar);
             showNotification('Proveedor eliminado con éxito.', 'success');
             this.proveedorAEliminar = null;
-            this.confirmDeleteModal.hide();
+            this.cerrarModalEliminacion();
             this.cargarProveedores();
         } catch (error) {
             console.error('Error al eliminar proveedor:', error);
@@ -178,56 +206,84 @@ class ProveedorManager {
         document.getElementById('proveedorModalTitle').textContent = proveedor ? 'Editar Proveedor' : 'Nuevo Proveedor';
 
         if (proveedor) {
+            // Mapeo de claves de proveedor a nombres de formulario
+            const keyMapping = {
+                'business_unit': 'businessUnit',
+                'supplier_number': 'supplierNumber',
+                'nombre': 'nombre',
+                'alternate_name': 'alternateName',
+                'rfc': 'rfc',
+                'city': 'city',
+                'state': 'state',
+                'county': 'county',
+                'postal_code': 'postalCode',
+                'payment_terms': 'paymentTerms',
+                'currency': 'currency',
+                'remittance_email': 'remittanceEmail',
+                'primary_flag': 'primaryFlag',
+                'purchasing_email': 'purchasingEmail'
+            };
+
             Object.keys(proveedor).forEach(key => {
-                const formElement = form.elements[key];
+                const formElementName = Object.keys(keyMapping).find(k => keyMapping[k] === key) || key;
+                 const formElement = form.elements[formElementName] || form.elements[key];
                 if (formElement) {
                     formElement.value = proveedor[key] || '';
                 }
             });
         }
-        this.modal.show();
+        this.abrirModalProveedor();
     }
 
     async guardarProveedor() {
         const form = document.getElementById('proveedorForm');
-        if (!form.checkValidity()) {
-            form.classList.add('was-validated');
-            return;
-        }
-
         const formData = new FormData(form);
         const proveedorData = Object.fromEntries(formData.entries());
 
-        // Si estamos editando, añadimos el ID al objeto de datos
-        if (this.proveedorSeleccionado) {
+        if (this.proveedorSeleccionado && this.proveedorSeleccionado.id) {
             proveedorData.id = this.proveedorSeleccionado.id;
         }
 
         try {
             await this.supabase.guardarProveedor(proveedorData);
             showNotification('Proveedor guardado con éxito', 'success');
-            this.modal.hide();
+            this.cerrarModalProveedor();
         } catch (error) {
             console.error('Error al guardar proveedor:', error);
             showNotification('Error al guardar el proveedor.', 'error');
         }
     }
 
-    determinarEstado(puntajeAlta, puntajeInterna) {
-        if (puntajeAlta === 0 && puntajeInterna === 0) return 'PENDIENTE';
-        if (puntajeAlta > 80) return 'APROBADO';
-        if (puntajeAlta >= 60 && puntajeAlta <= 80) return 'CONDICIONADO';
-        if (puntajeAlta < 60) return 'RECHAZADO';
-        return 'PENDIENTE';
+    determinarEstado(evaluacionAlta, evaluacionInterna) {
+        let puntajeFinal;
+
+        const altaExiste = evaluacionAlta && evaluacionAlta.puntaje !== undefined;
+        const internaExiste = evaluacionInterna && evaluacionInterna.puntaje !== undefined;
+
+        if (internaExiste) {
+            // La evaluación interna siempre tiene precedencia para reflejar el rendimiento actual
+            puntajeFinal = evaluacionInterna.puntaje;
+        } else if (altaExiste) {
+            // Si no hay interna, se usa la de alta
+            puntajeFinal = evaluacionAlta.puntaje;
+        } else {
+            // Sin ninguna evaluación, está pendiente
+            return 'PENDIENTE';
+        }
+
+        if (puntajeFinal > 80) return 'APROBADO';
+        if (puntajeFinal >= 60) return 'CONDICIONADO';
+        // Si tiene una evaluación (alta o interna) y no llega a 60, es rechazado.
+        return 'RECHAZADO';
     }
 
     getEstadoBadgeClass(estado) {
-        switch (estado.toLowerCase()) {
-            case 'aprobado': return 'bg-success';
-            case 'condicionado': return 'bg-warning text-dark';
-            case 'rechazado': return 'bg-danger';
-            case 'pendiente': return 'bg-secondary';
-            default: return 'bg-light text-dark';
+        switch (estado) {
+            case 'APROBADO': return 'bg-green-100 text-green-800';
+            case 'CONDICIONADO': return 'bg-yellow-100 text-yellow-800';
+            case 'RECHAZADO': return 'bg-red-100 text-red-800';
+            case 'PENDIENTE': return 'bg-gray-100 text-gray-800';
+            default: return 'bg-gray-100 text-gray-800';
         }
     }
 
@@ -237,7 +293,6 @@ class ProveedorManager {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Asegurarnos de que el código solo se ejecute en la página de proveedores
     if (document.getElementById('proveedoresTableBody')) {
         new ProveedorManager();
     }

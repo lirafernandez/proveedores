@@ -3,184 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Proveedores</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="static/css/styles.css?v=1.0">
+    <title>Proveedores - ZOOMLION</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="index.html"><i class="bi bi-building"></i> ZOOMLION</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="proveedores.html">Proveedores</a></li>
-                    <li class="nav-item"><a class="nav-link" href="evaluaciones.html">Evaluaciones</a></li>
-                    <li class="nav-item"><a class="nav-link" href="importar_proveedores.html">Importar Proveedores</a></li>
-                </ul>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-800 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="index.html" class="text-white text-2xl font-bold flex items-center"><i class="bi bi-building mr-2"></i><span>ZOOMLION</span></a>
+                </div>
+                <div class="hidden md:flex md:items-center md:space-x-4">
+                    <a href="index.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Inicio</a>
+                    <a href="proveedores.html" class="text-white bg-gray-900 px-3 py-2 rounded-md text-sm font-medium">Proveedores</a>
+                    <a href="evaluaciones.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Evaluaciones</a>
+                    <a href="dashboard.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                    <a href="importar_proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Importar</a>
+                    <a href="configuracion.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Configuración</a>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-gray-400 hover:text-white focus:outline-none focus:text-white"><i class="bi bi-list text-2xl"></i></button>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="index.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Inicio</a>
+                <a href="proveedores.html" class="text-white bg-gray-900 block px-3 py-2 rounded-md text-base font-medium">Proveedores</a>
+                <a href="evaluaciones.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Evaluaciones</a>
+                <a href="dashboard.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
+                <a href="importar_proveedores.html" class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Importar</a>
+                <a href="configuracion.html" class="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Configuración</a>
             </div>
         </div>
     </nav>
 
-    <main class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="mb-0">Gestión de Proveedores</h1>
-            <button class="btn btn-primary" id="btnNuevoProveedor"><i class="bi bi-plus-lg me-2"></i>Nuevo Proveedor</button>
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-4 md:mb-0">Gestión de Proveedores</h1>
+            <div class="flex space-x-2">
+                <a href="importar_proveedores.html" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center">
+                    <i class="bi bi-upload mr-2"></i> Importar
+                </a>
+                <button id="btnNuevoProveedor" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center">
+                    <i class="bi bi-plus-lg mr-2"></i> Nuevo Proveedor
+                </button>
+            </div>
+        </header>
+
+        <!-- Filtros -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3"><i class="bi bi-search text-gray-400"></i></span>
+                    <input type="text" id="searchProveedor" placeholder="Buscar por nombre o RFC..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <select id="filterEstado" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Todos los estados</option>
+                    <option value="aprobado">Aprobado</option>
+                    <option value="condicionado">Condicionado</option>
+                    <option value="pendiente">Pendiente</option>
+                    <option value="rechazado">Rechazado</option>
+                </select>
+                <select id="selectProveedoresPorPagina" class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="10">10 por página</option>
+                    <option value="25" selected>25 por página</option>
+                    <option value="50">50 por página</option>
+                    <option value="0">Mostrar todos</option>
+                </select>
+            </div>
         </div>
 
-        <div class="card">
-            <div class="card-header bg-light">
-                <div class="row align-items-center">
-                    <div class="col-md-4">
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" id="searchProveedor" placeholder="Buscar por nombre o RFC...">
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <select id="filterEstado" class="form-select">
-                            <option value="">Todos los estados</option>
-                            <option value="aprobado">Aprobado</option>
-                            <option value="pendiente">Pendiente</option>
-                            <option value="rechazado">Rechazado</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select id="selectProveedoresPorPagina" class="form-select">
-                            <option value="10">10 por página</option>
-                            <option value="25" selected>25 por página</option>
-                            <option value="50">50 por página</option>
-                            <option value="0">Mostrar todos</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover table-striped mb-0">
-                    <thead class="table-dark">
+        <!-- Tabla de Proveedores -->
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-800 text-white">
                         <tr>
-                            <th>Nombre</th>
-                            <th>RFC</th>
-                            <th>Fecha de Alta</th>
-                            <th>Estado</th>
-                            <th class="text-end">Acciones</th>
+                            <th class="p-4 text-left">Nombre</th>
+                            <th class="p-4 text-left">RFC</th>
+                            <th class="p-4 text-left">Fecha de Alta</th>
+                            <th class="p-4 text-left">Estado</th>
+                            <th class="p-4 text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="proveedoresTableBody">
-                        <!-- Las filas de proveedores se insertarán aquí dinámicamente -->
+                    <tbody id="proveedoresTableBody" class="divide-y divide-gray-200">
+                        <!-- Filas de JS -->
                     </tbody>
                 </table>
             </div>
-            <div class="card-footer d-flex justify-content-end" id="paginacionProveedores">
-                <!-- La paginación se generará aquí -->
+            <div id="paginacionProveedores" class="p-4 flex justify-end items-center">
+                <!-- Paginación de JS -->
             </div>
         </div>
     </main>
 
     <!-- Modal para Nuevo/Editar Proveedor -->
-    <div class="modal fade" id="proveedorModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="proveedorModalTitle">Nuevo Proveedor</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="proveedorForm">
-                        <div class="mb-3">
-                            <label for="businessUnit" class="form-label">Business Unit</label>
-                            <input type="text" class="form-control" id="businessUnit" name="business_unit" required>
+    <div id="proveedorModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden transform transition-all">
+            <div class="flex justify-between items-center bg-gray-800 text-white p-4">
+                <h3 class="text-xl font-bold" id="proveedorModalTitle">Nuevo Proveedor</h3>
+                <button id="closeProveedorModal" class="text-gray-400 hover:text-white">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <form id="proveedorForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Columna 1 -->
+                        <div class="space-y-4">
+                            <div>
+                                <label for="businessUnit" class="block text-sm font-medium text-gray-700">Business Unit</label>
+                                <input type="text" id="businessUnit" name="business_unit" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="supplierNumber" class="block text-sm font-medium text-gray-700">Supplier Number</label>
+                                <input type="text" id="supplierNumber" name="supplier_number" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="nombre" class="block text-sm font-medium text-gray-700">Supplier Name</label>
+                                <input type="text" id="nombre" name="nombre" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                             <div>
+                                <label for="alternateName" class="block text-sm font-medium text-gray-700">Alternate Name</label>
+                                <input type="text" id="alternateName" name="alternate_name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="supplierNumber" class="form-label">Supplier Number</label>
-                            <input type="text" class="form-control" id="supplierNumber" name="supplier_number" required>
+                        <!-- Columna 2 -->
+                        <div class="space-y-4">
+                            <div>
+                                <label for="rfc" class="block text-sm font-medium text-gray-700">Taxpayer ID</label>
+                                <input type="text" id="rfc" name="rfc" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                             <div>
+                                <label for="paymentTerms" class="block text-sm font-medium text-gray-700">Payment Terms</label>
+                                <input type="text" id="paymentTerms" name="payment_terms" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="currency" class="block text-sm font-medium text-gray-700">Currency</label>
+                                <input type="text" id="currency" name="currency" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="primaryFlag" class="block text-sm font-medium text-gray-700">Primary Flag</label>
+                                <input type="text" id="primaryFlag" name="primary_flag" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="nombre" class="form-label">Supplier Name</label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        <!-- Columna 3 -->
+                        <div class="space-y-4">
+                            <div>
+                                <label for="city" class="block text-sm font-medium text-gray-700">City</label>
+                                <input type="text" id="city" name="city" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="state" class="block text-sm font-medium text-gray-700">State</label>
+                                <input type="text" id="state" name="state" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="county" class="block text-sm font-medium text-gray-700">County</label>
+                                <input type="text" id="county" name="county" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="postalCode" class="block text-sm font-medium text-gray-700">Postal Code</label>
+                                <input type="text" id="postalCode" name="postal_code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                             <div>
+                                <label for="remittanceEmail" class="block text-sm font-medium text-gray-700">Remittance Email</label>
+                                <input type="email" id="remittanceEmail" name="remittance_email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="purchasingEmail" class="block text-sm font-medium text-gray-700">Purchasing Email</label>
+                                <input type="email" id="purchasingEmail" name="purchasing_email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="alternateName" class="form-label">Alternate Name</label>
-                            <input type="text" class="form-control" id="alternateName" name="alternate_name">
-                        </div>
-                        <div class="mb-3">
-                            <label for="rfc" class="form-label">Taxpayer ID</label>
-                            <input type="text" class="form-control" id="rfc" name="rfc" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="city" class="form-label">City</label>
-                            <input type="text" class="form-control" id="city" name="city">
-                        </div>
-                        <div class="mb-3">
-                            <label for="state" class="form-label">State</label>
-                            <input type="text" class="form-control" id="state" name="state">
-                        </div>
-                        <div class="mb-3">
-                            <label for="county" class="form-label">County</label>
-                            <input type="text" class="form-control" id="county" name="county">
-                        </div>
-                        <div class="mb-3">
-                            <label for="postalCode" class="form-label">Postal Code</label>
-                            <input type="text" class="form-control" id="postalCode" name="postal_code">
-                        </div>
-                        <div class="mb-3">
-                            <label for="paymentTerms" class="form-label">Payment Terms Name</label>
-                            <input type="text" class="form-control" id="paymentTerms" name="payment_terms">
-                        </div>
-                        <div class="mb-3">
-                            <label for="currency" class="form-label">Currency</label>
-                            <input type="text" class="form-control" id="currency" name="currency">
-                        </div>
-                        <div class="mb-3">
-                            <label for="remittanceEmail" class="form-label">Remittance Email</label>
-                            <input type="email" class="form-control" id="remittanceEmail" name="remittance_email">
-                        </div>
-                        <div class="mb-3">
-                            <label for="primaryFlag" class="form-label">Primary Flag</label>
-                            <input type="text" class="form-control" id="primaryFlag" name="primary_flag">
-                        </div>
-                        <div class="mb-3">
-                            <label for="purchasingEmail" class="form-label">Purchasing Email</label>
-                            <input type="email" class="form-control" id="purchasingEmail" name="purchasing_email">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="btnGuardarProveedor">Guardar</button>
-                </div>
+                    </div>
+                </form>
+            </div>
+            <div class="bg-gray-50 p-4 flex justify-end space-x-3">
+                <button id="cancelProveedorModal" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="btnGuardarProveedor" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div id="confirmDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-md m-4">
+            <div class="p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-2">Confirmar Eliminación</h3>
+                <p class="text-gray-600">¿Estás seguro de que quieres eliminar este proveedor? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="bg-gray-50 p-4 flex justify-end space-x-3">
+                <button id="btnCancelDelete" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">Cancelar</button>
+                <button id="btnConfirmDelete" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Eliminar</button>
             </div>
         </div>
     </div>
 
     <div id="notification-container"></div>
 
-    <!-- Modal de Confirmación de Eliminación -->
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que quieres eliminar este proveedor? Esta acción no se puede deshacer.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmDelete">Eliminar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script type="module" src="js/proveedores.js?v=1.0"></script>
+    <script type="module" src="js/proveedores.js?v=1.0"></script>
+    <script>
+        // Script para el menú móvil
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            var menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+    </script>
 </body>
 </html>
