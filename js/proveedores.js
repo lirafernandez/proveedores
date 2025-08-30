@@ -17,8 +17,13 @@ class ProveedorManager {
     }
 
     cacheDOM() {
+        // Modales de Bootstrap
+        this.proveedorModalEl = document.getElementById('proveedorModal');
+        this.proveedorModal = new bootstrap.Modal(this.proveedorModalEl);
+        this.confirmDeleteModalEl = document.getElementById('confirmDeleteModal');
+        this.confirmDeleteModal = new bootstrap.Modal(this.confirmDeleteModalEl);
+
         // Botones principales y filtros
-        this.btnNuevoProveedor = document.getElementById('btnNuevoProveedor');
         this.searchProveedor = document.getElementById('searchProveedor');
         this.filterEstado = document.getElementById('filterEstado');
         this.pagSel = document.getElementById('selectProveedoresPorPagina');
@@ -27,21 +32,13 @@ class ProveedorManager {
         this.proveedoresTableBody = document.getElementById('proveedoresTableBody');
         this.paginacionContainer = document.getElementById('paginacionProveedores');
 
-        // Modal de Proveedor
-        this.proveedorModal = document.getElementById('proveedorModal');
+        // Formulario y botones de modales
         this.btnGuardarProveedor = document.getElementById('btnGuardarProveedor');
-        this.closeProveedorModal = document.getElementById('closeProveedorModal');
-        this.cancelProveedorModal = document.getElementById('cancelProveedorModal');
-        
-        // Modal de Confirmación de Eliminación
-        this.confirmDeleteModal = document.getElementById('confirmDeleteModal');
         this.btnConfirmDelete = document.getElementById('btnConfirmDelete');
-        this.btnCancelDelete = document.getElementById('btnCancelDelete');
     }
 
     inicializarEventos() {
         // Eventos de la página principal
-        if (this.btnNuevoProveedor) this.btnNuevoProveedor.addEventListener('click', () => this.mostrarModalProveedor());
         if (this.searchProveedor) this.searchProveedor.addEventListener('input', () => { this.paginaActual = 1; this.renderizarTabla(); });
         if (this.filterEstado) this.filterEstado.addEventListener('change', () => { this.paginaActual = 1; this.renderizarTabla(); });
         if (this.pagSel) {
@@ -52,14 +49,15 @@ class ProveedorManager {
             });
         }
 
-        // Eventos del Modal de Proveedor
+        // Eventos de Modales
         if (this.btnGuardarProveedor) this.btnGuardarProveedor.addEventListener('click', () => this.guardarProveedor());
-        if (this.closeProveedorModal) this.closeProveedorModal.addEventListener('click', () => this.cerrarModalProveedor());
-        if (this.cancelProveedorModal) this.cancelProveedorModal.addEventListener('click', () => this.cerrarModalProveedor());
-
-        // Eventos del Modal de Eliminación
         if (this.btnConfirmDelete) this.btnConfirmDelete.addEventListener('click', () => this.ejecutarEliminacion());
-        if (this.btnCancelDelete) this.btnCancelDelete.addEventListener('click', () => this.cerrarModalEliminacion());
+
+        // Limpiar formulario al cerrar modal de proveedor
+        this.proveedorModalEl.addEventListener('hidden.bs.modal', () => {
+            document.getElementById('proveedorForm').reset();
+            this.proveedorSeleccionado = null;
+        });
 
         // Suscripción a cambios en Supabase
         this.supabase.subscribeToProveedores(() => {
@@ -67,24 +65,6 @@ class ProveedorManager {
         });
     }
 
-    // --- Métodos de Control de Modales ---
-    abrirModalProveedor() {
-        this.proveedorModal.classList.remove('hidden');
-    }
-
-    cerrarModalProveedor() {
-        this.proveedorModal.classList.add('hidden');
-    }
-
-    abrirModalEliminacion() {
-        this.confirmDeleteModal.classList.remove('hidden');
-    }
-
-    cerrarModalEliminacion() {
-        this.confirmDeleteModal.classList.add('hidden');
-    }
-
-    // --- Métodos de Lógica de Datos ---
     async cargarProveedores() {
         try {
             const { data } = await this.supabase.obtenerProveedores({ porPagina: 0 });
@@ -118,7 +98,7 @@ class ProveedorManager {
 
         this.proveedoresTableBody.innerHTML = '';
         if (proveedoresPaginados.length === 0) {
-            this.proveedoresTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-gray-500 py-10">No se encontraron proveedores.</td></tr>`;
+            this.proveedoresTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-5">No se encontraron proveedores.</td></tr>`;
         } else {
             proveedoresPaginados.forEach(proveedor => {
                 const row = this.crearFilaProveedor(proveedor);
@@ -133,44 +113,52 @@ class ProveedorManager {
         this.paginacionContainer.innerHTML = '';
         if (this.totalPaginas <= 1) return;
 
+        const ul = document.createElement('ul');
+        ul.className = 'pagination';
+
         for (let i = 1; i <= this.totalPaginas; i++) {
-            const btn = document.createElement('button');
-            btn.textContent = i;
-            btn.className = `px-3 py-1 rounded-md text-sm font-medium mx-1 ${i === this.paginaActual ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`;
-            btn.addEventListener('click', () => {
+            const li = document.createElement('li');
+            li.className = `page-item ${i === this.paginaActual ? 'active' : ''}`;
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.href = '#';
+            a.textContent = i;
+            a.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.paginaActual = i;
                 this.renderizarTabla();
             });
-            this.paginacionContainer.appendChild(btn);
+            li.appendChild(a);
+            ul.appendChild(li);
         }
+        this.paginacionContainer.appendChild(ul);
     }
 
     crearFilaProveedor(proveedor) {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-gray-50 transition-colors';
         
         const estado = this.determinarEstado(proveedor.evaluaciones?.ALTA, proveedor.evaluaciones?.INTERNA);
         const badgeClass = this.getEstadoBadgeClass(estado);
 
         tr.innerHTML = `
-            <td class="p-4">${proveedor.nombre}</td>
-            <td class="p-4">${proveedor.rfc || 'N/A'}</td>
-            <td class="p-4">${proveedor.fecha_alta ? new Date(proveedor.fecha_alta).toLocaleDateString() : 'N/A'}</td>
-            <td class="p-4"><span class="px-2 py-1 text-xs font-semibold rounded-full ${badgeClass}">${estado}</span></td>
-            <td class="p-4 text-right"></td>
+            <td>${proveedor.nombre}</td>
+            <td>${proveedor.rfc || 'N/A'}</td>
+            <td>${proveedor.fecha_alta ? new Date(proveedor.fecha_alta).toLocaleDateString() : 'N/A'}</td>
+            <td><span class="badge ${badgeClass}">${estado}</span></td>
+            <td class="text-end"></td>
         `;
 
         const accionesTd = tr.querySelector('td:last-child');
-        accionesTd.appendChild(this._createActionButton('Evaluar', 'bi-clipboard-check', 'bg-blue-500 hover:bg-blue-600', () => this.irAEvaluacion(proveedor.id)));
-        accionesTd.appendChild(this._createActionButton('Editar', 'bi-pencil', 'bg-yellow-500 hover:bg-yellow-600', () => this.mostrarModalProveedor(proveedor)));
-        accionesTd.appendChild(this._createActionButton('Eliminar', 'bi-trash', 'bg-red-500 hover:bg-red-600', () => this.solicitarEliminacion(proveedor.id)));
+        accionesTd.appendChild(this._createActionButton('Evaluar', 'bi-clipboard-check', 'btn-info', () => this.irAEvaluacion(proveedor.id)));
+        accionesTd.appendChild(this._createActionButton('Editar', 'bi-pencil', 'btn-warning', () => this.mostrarModalProveedor(proveedor)));
+        accionesTd.appendChild(this._createActionButton('Eliminar', 'bi-trash', 'btn-danger', () => this.solicitarEliminacion(proveedor.id)));
 
         return tr;
     }
 
     _createActionButton(title, icon, btnClass, onClick) {
         const button = document.createElement('button');
-        button.className = `text-white p-2 rounded-md shadow-sm hover:shadow-lg transition-all duration-200 mx-1 ${btnClass}`;
+        button.className = `btn btn-sm ${btnClass} mx-1`;
         button.title = title;
         button.innerHTML = `<i class="bi ${icon}"></i>`;
         button.addEventListener('click', (e) => {
@@ -182,7 +170,7 @@ class ProveedorManager {
     
     solicitarEliminacion(id) {
         this.proveedorAEliminar = id;
-        this.abrirModalEliminacion();
+        this.confirmDeleteModal.show();
     }
 
     async ejecutarEliminacion() {
@@ -191,7 +179,7 @@ class ProveedorManager {
             await this.supabase.eliminarProveedor(this.proveedorAEliminar);
             showNotification('Proveedor eliminado con éxito.', 'success');
             this.proveedorAEliminar = null;
-            this.cerrarModalEliminacion();
+            this.confirmDeleteModal.hide();
             this.cargarProveedores();
         } catch (error) {
             console.error('Error al eliminar proveedor:', error);
@@ -232,7 +220,7 @@ class ProveedorManager {
                 }
             });
         }
-        this.abrirModalProveedor();
+        this.proveedorModal.show();
     }
 
     async guardarProveedor() {
@@ -247,7 +235,7 @@ class ProveedorManager {
         try {
             await this.supabase.guardarProveedor(proveedorData);
             showNotification('Proveedor guardado con éxito', 'success');
-            this.cerrarModalProveedor();
+            this.proveedorModal.hide();
         } catch (error) {
             console.error('Error al guardar proveedor:', error);
             showNotification('Error al guardar el proveedor.', 'error');
@@ -261,29 +249,25 @@ class ProveedorManager {
         const internaExiste = evaluacionInterna && evaluacionInterna.puntaje !== undefined;
 
         if (internaExiste) {
-            // La evaluación interna siempre tiene precedencia para reflejar el rendimiento actual
             puntajeFinal = evaluacionInterna.puntaje;
         } else if (altaExiste) {
-            // Si no hay interna, se usa la de alta
             puntajeFinal = evaluacionAlta.puntaje;
         } else {
-            // Sin ninguna evaluación, está pendiente
             return 'PENDIENTE';
         }
 
         if (puntajeFinal > 80) return 'APROBADO';
         if (puntajeFinal >= 60) return 'CONDICIONADO';
-        // Si tiene una evaluación (alta o interna) y no llega a 60, es rechazado.
         return 'RECHAZADO';
     }
 
     getEstadoBadgeClass(estado) {
         switch (estado) {
-            case 'APROBADO': return 'bg-green-100 text-green-800';
-            case 'CONDICIONADO': return 'bg-yellow-100 text-yellow-800';
-            case 'RECHAZADO': return 'bg-red-100 text-red-800';
-            case 'PENDIENTE': return 'bg-gray-100 text-gray-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'APROBADO': return 'bg-success';
+            case 'CONDICIONADO': return 'bg-warning text-dark';
+            case 'RECHAZADO': return 'bg-danger';
+            case 'PENDIENTE': return 'bg-secondary';
+            default: return 'bg-light text-dark';
         }
     }
 
