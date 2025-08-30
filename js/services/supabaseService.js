@@ -3,9 +3,13 @@ import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
 const SUPABASE_URL = 'https://lvckwdljcilepwikzopt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2Y2t3ZGxqY2lsZXB3aWt6b3B0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY1MDEyNTksImV4cCI6MjA3MjA3NzI1OX0.iClrUtlmVWB_qnPQ6iD-4ZotF8aKl9d2w8rNa_NBEcM';
 
+// Create a single Supabase client instance
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 class SupabaseService {
     constructor() {
-        this.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // All instances of SupabaseService will share the same client
+        this.supabase = supabase;
     }
 
     // === MÉTODOS DE PROVEEDORES ===
@@ -13,14 +17,12 @@ class SupabaseService {
     async obtenerProveedores({ pagina = 1, porPagina = 25, busqueda = '' } = {}) {
         let query = this.supabase
             .from('proveedores')
-            .select('*', { count: 'exact' });
+            .select('*, evaluaciones(*)', { count: 'exact' });
 
-        // Lógica de búsqueda
         if (busqueda) {
             query = query.or(`nombre.ilike.%${busqueda}%,rfc.ilike.%${busqueda}%`);
         }
 
-        // Lógica de paginación
         if (porPagina > 0) {
             const from = (pagina - 1) * porPagina;
             const to = from + porPagina - 1;
@@ -30,16 +32,35 @@ class SupabaseService {
         const { data, error, count } = await query;
 
         if (error) throw error;
-        return { data: data || [], count: count };
+        
+        // Post-procesamiento para anidar evaluaciones
+        const proveedoresConEvaluaciones = data.map(p => {
+            p.evaluaciones = {
+                ALTA: p.evaluaciones.find(e => e.tipo_evaluacion === 'ALTA'),
+                INTERNA: p.evaluaciones.find(e => e.tipo_evaluacion === 'INTERNA')
+            };
+            return p;
+        });
+
+        return { data: proveedoresConEvaluaciones || [], count: count };
     }
 
     async obtenerProveedorPorId(id) {
         const { data, error } = await this.supabase
             .from('proveedores')
-            .select('*')
+            .select('*, evaluaciones(*)')
             .eq('id', id)
             .single();
         if (error) throw error;
+
+        // Post-procesamiento para anidar evaluaciones
+        if (data && data.evaluaciones) {
+            data.evaluaciones = {
+                ALTA: data.evaluaciones.find(e => e.tipo_evaluacion === 'ALTA'),
+                INTERNA: data.evaluaciones.find(e => e.tipo_evaluacion === 'INTERNA')
+            };
+        }
+
         return data;
     }
 
@@ -47,7 +68,7 @@ class SupabaseService {
         const { error } = await this.supabase
             .from('evaluaciones')
             .delete()
-            .neq('id', -1); // Borra todas las filas
+            .neq('id', -1);
         if (error) throw error;
     }
 
@@ -73,7 +94,7 @@ class SupabaseService {
         const { error } = await this.supabase
             .from('proveedores')
             .delete()
-            .neq('id', -1); // Borra todas las filas
+            .neq('id', -1);
         if (error) throw error;
     }
 
@@ -146,7 +167,7 @@ class SupabaseService {
         const { data, error } = await this.supabase
             .storage
             .from('documentos-proveedores')
-            .createSignedUrl(filePath, 60); // URL válida por 60 segundos
+            .createSignedUrl(filePath, 60);
         if (error) throw error;
         return data;
     }
@@ -162,21 +183,16 @@ class SupabaseService {
     }
 
     async eliminarDocumento(storagePath) {
-        // Primero, borrar el archivo del storage
         const { error: storageError } = await this.supabase
             .storage
             .from('documentos-proveedores')
             .remove([storagePath]);
-
-        if (storageError) {
-            // No lanzar error si el archivo no existía, podría ser una limpieza de un registro huérfano
-            if (storageError.statusCode !== "404" && storageError.message !== "The resource was not found") {
-                console.error("Error deleting from storage:", storageError);
-                throw storageError;
-            }
+        
+        if (storageError && storageError.statusCode !== "404" && storageError.message !== "The resource was not found") {
+            console.error("Error deleting from storage:", storageError);
+            throw storageError;
         }
 
-        // Luego, borrar el registro de la base de datos
         const { error: dbError } = await this.supabase
             .from('documentos')
             .delete()
@@ -221,4 +237,6 @@ class SupabaseService {
     }
 }
 
-export { SupabaseService };
+// Create and export a single instance of the service
+const supabaseService = new SupabaseService();
+export { supabaseService };
