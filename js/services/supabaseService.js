@@ -161,6 +161,30 @@ class SupabaseService {
         return data;
     }
 
+    async eliminarDocumento(storagePath) {
+        // Primero, borramos el archivo del storage.
+        const { error: storageError } = await this.supabase
+            .storage
+            .from('documentos-proveedores')
+            .remove([storagePath]);
+
+        // Si hay un error que no sea 'Not Found', lo lanzamos.
+        // Ignoramos el error de 'no encontrado' para que no falle si el archivo ya fue borrado manualmente.
+        if (storageError && storageError.message !== 'Not Found') {
+            console.warn(`No se pudo borrar el archivo del storage: ${storageError.message}`);
+        }
+
+        // Segundo, borramos el registro de la base de datos.
+        const { error: dbError } = await this.supabase
+            .from('documentos')
+            .delete()
+            .eq('storage_path', storagePath);
+
+        if (dbError) {
+            throw new Error(`Error al borrar el registro del documento: ${dbError.message}`);
+        }
+    }
+
     // === MÉTODOS DE CRITERIOS ===
     async obtenerCriterios() {
         const { data, error } = await this.supabase.from('criterios').select('*');
