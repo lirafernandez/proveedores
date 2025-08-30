@@ -1,5 +1,4 @@
 import { SupabaseService } from './services/supabaseService.js';
-import { fileToBase64 } from './modules/fileUtils.js';
 import { showNotification } from './ui/notifications.js';
 
 class EvaluacionManager {
@@ -222,17 +221,19 @@ class EvaluacionManager {
         if (!file || !this.proveedorActual) return;
 
         const statusContainer = event.target.parentElement.querySelector('.file-status-container');
-        statusContainer.innerHTML = '<div class="text-info mt-1">Guardando...</div>';
+        statusContainer.innerHTML = '<div class="text-info mt-1">Subiendo...</div>';
 
         try {
-            const contenido = await fileToBase64(file);
             const criterioId = event.target.id.replace('File', '');
+            const filePath = `${this.proveedorActual.id}/${criterioId}-${file.name}`;
+
+            await this.supabase.uploadFile(file, filePath);
             
             await this.supabase.guardarDocumento({
                 proveedor_id: this.proveedorActual.id,
                 tipo: criterioId,
                 nombre_archivo: file.name,
-                contenido: contenido
+                storage_path: filePath
             });
 
             statusContainer.innerHTML = `
@@ -240,26 +241,29 @@ class EvaluacionManager {
                 <button class="btn btn-sm btn-outline-primary btn-preview">Vista Previa</button>
             `;
             statusContainer.querySelector('.btn-preview').addEventListener('click', () => this.previsualizarDocumento(criterioId));
+            showNotification('Archivo subido con éxito.', 'success');
 
         } catch (error) {
             console.error('Error al guardar el archivo:', error);
-            statusContainer.innerHTML = '<div class="text-danger mt-1">Error al guardar</div>';
+            statusContainer.innerHTML = '<div class="text-danger mt-1">Error al subir</div>';
+            showNotification('Error al subir el archivo.', 'error');
         }
     }
 
     async previsualizarDocumento(criterioId) {
         try {
             const doc = await this.supabase.obtenerDocumento(this.proveedorActual.id, criterioId);
-            if (!doc || !doc.contenido) {
+            if (!doc || !doc.storage_path) {
                 showNotification('No se encontró el documento para previsualizar.', 'warning');
                 return;
             }
 
-            const mimeType = this.getFileMimeType(doc.nombre_archivo);
-            const dataUrl = `data:${mimeType};base64,${doc.contenido}`;
+            const { signedUrl } = await this.supabase.createSignedUrl(doc.storage_path);
 
-            const newWindow = window.open();
-            newWindow.document.write(`<iframe src="${dataUrl}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+            const newWindow = window.open(signedUrl, '_blank');
+            if(!newWindow) {
+                showNotification('Por favor, deshabilite el bloqueo de ventanas emergentes para este sitio.', 'info');
+            }
 
         } catch (error) {
             console.error('Error al previsualizar el documento:', error);
@@ -343,7 +347,7 @@ class EvaluacionManager {
     }
 
     async borrarTodasLasEvaluaciones() {
-        try {.
+        try {
             await this.supabase.borrarTodasEvaluaciones();
             showNotification('Todas las evaluaciones han sido borradas.', 'success');
             this.confirmDeleteAllModal.hide();

@@ -48,7 +48,7 @@ CREATE TABLE public.documentos (
     proveedor_id BIGINT REFERENCES public.proveedores(id) ON DELETE CASCADE,
     tipo TEXT,
     nombre_archivo TEXT,
-    contenido TEXT,
+    storage_path TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE (proveedor_id, tipo)
 );
